@@ -1,0 +1,12 @@
+= index
+
+== get index
+
+CURL:
+include::{snippets}/api/curl-request.adoc[]
+
+Request Parameter:
+include::{snippets}/api/http-request.adoc[]
+
+Response:
+include::{snippets}/api/http-response.adoc[]
