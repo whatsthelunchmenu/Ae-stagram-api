@@ -29,3 +29,9 @@ dependencies {
 test {
     useJUnitPlatform()
 }
+
+jar {
+    // springboot v2.5 이상부터는 빌드 시 plain 아카이브가 생성된다.
+    // docker로 배포하기위해서는 하나의 jar만 필요함으로 plan.jar를 제거하기위한 설정
+    enabled = false
+}
