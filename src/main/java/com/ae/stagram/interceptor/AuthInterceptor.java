@@ -1,7 +1,6 @@
 package com.ae.stagram.interceptor;
 
 import com.ae.stagram.dto.UserDto;
-import com.ae.stagram.service.UserService;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
 import java.util.Optional;
@@ -17,8 +16,6 @@ public class AuthInterceptor implements HandlerInterceptor {
 
     private final FirebaseAuth firebaseAuth;
 
-    private final UserService userService;
-
     private final String tokenKey = "Authorization";
 
     @Override
@@ -31,7 +28,7 @@ public class AuthInterceptor implements HandlerInterceptor {
 
         FirebaseToken firebaseToken = firebaseAuth.verifyIdToken(token);
 
-        request.setAttribute("UserDto",
+        request.setAttribute("firebaseUser",
             UserDto.builder()
                 .uuid(firebaseToken.getUid())
                 .displayName(firebaseToken.getName())

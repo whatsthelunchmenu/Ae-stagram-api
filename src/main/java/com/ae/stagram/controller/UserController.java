@@ -19,7 +19,7 @@ public class UserController {
 
     private final UserService userService;
 
-    @PostMapping
+    @PostMapping("login")
     public ResponseEntity<?> joinUser(@RequestAttribute(value = "firebaseUser") UserDto userDto) {
 
         User user = User.builder()
