@@ -10,7 +10,7 @@ pipeline {
             steps {
                 echo 'Source Clone'
 
-                git branch: 'feature/1', credentialsId: 'jenkins-access-key', url: 'git@github.com:whatsthelunchmenu/Ae-stagram-api.git'
+                git branch: 'develop', credentialsId: 'jenkins-access-key', url: 'git@github.com:whatsthelunchmenu/Ae-stagram-api.git'
             }
         }
 
