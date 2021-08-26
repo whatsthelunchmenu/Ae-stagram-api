@@ -1,11 +1,7 @@
 spring:
 
-  datasource:
-    url: jdbc:mysql://localhost:3306/Ae_stagram?useSSL=false&characterEncoding=UTF-8&serverTimezone=UTC
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    username: dev
-    password: 1234
-
+  profiles:
+    active: local
   # mysql 사용 설정
   jpa:
     database: mysql
@@ -21,6 +17,49 @@ logging:
   level:
     org.hibernate: info
 
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+  datasource:
+    url: jdbc:mysql://localhost:3306/Ae_stagram?useSSL=false&characterEncoding=UTF-8&serverTimezone=UTC
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: dev
+    password: 1234
+
 firebase:
   sdk:
     path: src/main/resources/firebase-accesskey.json
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  datasource:
+    url: ${MYSQL_DB_URL}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${MYSQL_DB_USERNAME}
+    password: ${MYSQL_DB_PASSWORD}
+
+firebase:
+  sdk:
+    path: ${FIREBASE_SDK_PATH}
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  datasource:
+    url: ${MYSQL_DB_URL}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${MYSQL_DB_USERNAME}
+    password: ${MYSQL_DB_PASSWORD}
+
+firebase:
+  sdk:
+    path: ${FIREBASE_SDK_PATH}
