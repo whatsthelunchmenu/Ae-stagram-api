@@ -1,6 +1,7 @@
 package com.ae.stagram.interceptor;
 
 import com.ae.stagram.dto.UserDto;
+import com.ae.stagram.exception.NotFoundToken;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
 import java.util.Optional;
@@ -24,7 +25,7 @@ public class AuthInterceptor implements HandlerInterceptor {
 
         String token = request.getHeader(tokenKey);
         Optional.ofNullable(token)
-            .orElseThrow(() -> new RuntimeException("토큰이 없습니다."));
+            .orElseThrow(() -> new NotFoundToken("토큰이 없습니다."));
 
         FirebaseToken firebaseToken = firebaseAuth.verifyIdToken(token);
 

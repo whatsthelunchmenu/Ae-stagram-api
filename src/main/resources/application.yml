@@ -1,4 +1,5 @@
 spring:
+
   profiles:
     active: local
   # mysql 사용 설정
@@ -29,7 +30,7 @@ spring:
 
 firebase:
   sdk:
-    path: src/main/resources/firebase-accesskey.json
+    path: firebase-accesskey.json
 
 ---
 spring:
