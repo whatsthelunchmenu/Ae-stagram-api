@@ -30,7 +30,7 @@ spring:
 
 firebase:
   sdk:
-    path: src/main/resources/firebase-accesskey.json
+    path: firebase-accesskey.json
 
 ---
 spring:
