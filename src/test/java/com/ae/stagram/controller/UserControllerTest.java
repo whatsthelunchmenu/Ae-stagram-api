@@ -46,13 +46,7 @@ public class UserControllerTest {
             .email("test@naver.com")
             .build();
 
-        willDoNothing().given(userService).addUser(
-            User.builder()
-                .id(1L)
-                .uuid("12345")
-                .displayName("test")
-                .email("test@naver.com")
-                .build());
+        willDoNothing().given(userService).addUser(userDto);
 
         //when
         ResultActions resultActions = this.mockMvc.perform(post("/user/login")

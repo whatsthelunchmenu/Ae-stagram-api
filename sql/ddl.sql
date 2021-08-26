@@ -3,6 +3,5 @@ create table User(
      UUID varchar(100) not null,
      EMAIL varchar(100) not null,
      DISPLAY_NAME varchar(100) not null,
-     primary key (ID),
-     unique index idx_email (EMAIL)
+     primary key (ID)
 );
