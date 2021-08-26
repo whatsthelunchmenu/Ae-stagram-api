@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "ae-stagram-app",
+  "private_key_id": "53d54c24c609625c3a4e45c2d64aa1025cca337f",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCZHNtyY12lIhZP\nk+jVzn3Q4hi+jSUf5WekJ6YWs3EqIdisWFOJSsrmB0rEqVID97VL7GfAITEHASl1\ngUxeI7lAuE00iaYbbNj7wUXkzTSOtdHVSU9PJj2ak9N74nriGR0nOltreD6pbul1\nxUet3khuKbcmCg+Mk+iUOjBAQBG2TZGQdUVA2Sf7ceCs+VVHbv8QYue/JnreTLQk\nmZmU4hCjFT8DKdQhBLKeOJ06PXsKLG49bIm+IKT4oKH8goUCnU7Ur3U1A1Dr000p\nVn5wg2t5984Yx9uUPUdrpCJzTlxEWu3lV/XarOxazyFomvOfGIhR7U8lhYvfS+ng\nzy1b4g8TAgMBAAECggEAKJcr3hFVnBeDTqlpinTpidzGro2AkAojBbO1JkN/9qlu\nZZIs4zK+w2ife69fnMmoeG49uwORmcfHE+2pLzPNQskZPppXPOIITAWa3+M+0a6F\n6EM9EUCUCEy0Ph12ckYyIlooLj98bTKIFb6tF/zbusi4Uw9Lu/riJ5mdfQr/JxLU\nUT6zam1EPLkPxmcUC7KmpqgWai+DXGfrfnvnFdKPOPBb7BxjxqGlcG7dMwa66Hgf\nmOjwmAM895gbBI6yEEeyrkv2sl+R2jQWRIjfrRpc3Zs7Un+ytyMbRjNjmaapYVMH\no7MspfU0Bofotk7GDqCFV6ItlSlJqVbTmXS1J0OAAQKBgQDGH2Z5MxJikawq0P8g\njsO4iwuyw4KrFeZJoRubfxg5ZjxtFBP3brp0O6IaEZ0UiT51qUQkOZ4mrKbFDU5B\n/7EM/hlJ8hiHmYNVYdw1Y4guERBvXuqs07G90UOeapXbUCRKsn/6zQHLcyLOzlHx\n0IxDamDMJoH4rl12WE00gF5vEwKBgQDF12PG4UwUoHpKgqw5N/7nfhSPoGdn/ji9\ndr2nEPXw4iWEGTjQeylTTqH7N+SI0VYOQMBvpBpzw5OBzjPmI6Mouv5qtDF64KZs\nhwp5w4sUgb632GERxX+gN1muiwAv+POyzn0Xl6ztKSeptfbmcEvomrMv33gOGTOS\nj22wL8HgAQKBgAwvnD7yLDxR13QevMKE5XbxXnvVWLErPKnktez/iT7mkernpD7A\n2ckSbesKkE3WDzhve9h6jsa0MeHG6rxWfM5exrFsqaOVhqV2ynOiNpsWw5sGDIsq\nzjDtsSoKRkNiD4lkp0iG2YhpAYgU2qdz+1yeK2wDJlVkbC0+Sylih+xvAoGAON7k\noKvs6dUDsl2D0mLlVHgqwuqyLvOmLdhvRhIbEKaBcEqryUpOI9NrvsJfYHEEks5M\nQwtiSzrCMUMsKhC+exvdvKCVxKPFU1cyTLRIS5nMUB7UMH6cZFrk3ca5RBEFRLYU\nwW5pWDdHXoKfObi4KWIm9jD/2tWlvJCcUFQ6IAECgYArh7Vr21V5Ld7j5uFfZ3sO\nBnqltmBWmfzQefrX+N4tInexbUbtR0jZsd72w/M274jcbY+epqhbpcxOHYcKv26W\nNy9TnAsiFJV37W7rPGwdZGrOKgY/hJN67ym2yRS/9df+oBS7GVF29FU+tsnhPJwc\naWQn3F2qqNb/8nzPWbJnzA==\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-hwmke@ae-stagram-app.iam.gserviceaccount.com",
+  "client_id": "106166610728613559137",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-hwmke%40ae-stagram-app.iam.gserviceaccount.com"
+}
