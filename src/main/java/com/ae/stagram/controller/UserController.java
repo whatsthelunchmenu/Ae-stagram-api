@@ -31,7 +31,6 @@ public class UserController {
                 .result(true)
                 .message("")
                 .status(HttpStatus.OK.value())
-                .resultCode("")
                 .build()).body(null)
             .build());
     }
