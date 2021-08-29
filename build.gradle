@@ -66,7 +66,8 @@ asciidoctor.doFirst {
 task copyDocument(type: Copy) {
     dependsOn asciidoctor
     from file("build/docs/asciidoc")
-    into file("${sourceSets.main.output.resourcesDir}/static/docs")
+//    into file("${sourceSets.main.output.resourcesDir}/static/docs")
+    into file("src/main/resources/static/docs")
 }
 
 build {
