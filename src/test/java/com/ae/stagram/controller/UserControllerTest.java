@@ -16,14 +16,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.ae.stagram.dto.UserDto;
 import com.ae.stagram.interceptor.AuthInterceptor;
 import com.ae.stagram.service.UserService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpHeaders;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -43,14 +41,8 @@ import org.springframework.web.context.WebApplicationContext;
 @AutoConfigureMockMvc(addFilters = false)
 public class UserControllerTest {
 
-//    @Autowired
-//    private ObjectMapper objectMapper;
-
     @MockBean
     private UserService userService;
-
-//    @Autowired
-//    private UserController userController;
 
     @MockBean
     private AuthInterceptor authInterceptor;
@@ -80,7 +72,7 @@ public class UserControllerTest {
             .willReturn(true);
 
         //when
-        ResultActions result = this.mockMvc.perform(post("/user/login")
+        ResultActions result = this.mockMvc.perform(post("/users/login")
             .requestAttr("firebaseUser", userDto)
             .header("Authorization",
                 "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c")

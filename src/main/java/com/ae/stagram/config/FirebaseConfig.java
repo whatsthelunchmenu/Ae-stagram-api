@@ -20,7 +20,7 @@ public class FirebaseConfig {
     @Value("${firebase.sdk.path}")
     private String firebaseAdminSdkPath;
 
-    private FirebaseApp firebaseApp;
+//    private FirebaseApp firebaseApp;
 
     @Primary
     @Bean
@@ -32,7 +32,8 @@ public class FirebaseConfig {
             .build();
 
         if (FirebaseApp.getApps().isEmpty()){
-            firebaseApp = FirebaseApp.initializeApp(options);
+//            firebaseApp = FirebaseApp.initializeApp(options);
+             FirebaseApp.initializeApp(options);
         }
         return FirebaseApp.getInstance();
     }
