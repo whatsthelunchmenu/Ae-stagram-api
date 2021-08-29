@@ -2,6 +2,7 @@ plugins {
     id 'org.springframework.boot' version '2.5.4'
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
     id 'java'
+    id "org.asciidoctor.jvm.convert" version "3.3.2"
 }
 
 group = 'com.ae'
@@ -12,6 +13,7 @@ configurations {
     compileOnly {
         extendsFrom annotationProcessor
     }
+    asciidoctorExtensions
 }
 
 repositories {
@@ -30,10 +32,46 @@ dependencies {
     //Mysql 연동
     implementation group: 'mysql', name: 'mysql-connector-java'
 
+    // .adoc 파일에서 빌드, 스니펫 생성을 자동으로 구성되기 위해 추가하는 의존성
+    asciidoctorExtensions 'org.springframework.restdocs:spring-restdocs-asciidoctor'
+
+    // restdocs에서 MockMvc를 사용할 때 사용하는 의존성
+    testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
+
+    implementation group: 'org.springframework.restdocs', name: 'spring-restdocs-core'
+}
+
+// 스니펫이 위치할 경로를 지정한다.
+ext {
+    snippetsDir = file('build/generated-snippets')
 }
 
 test {
     useJUnitPlatform()
+    // 스니펫 디렉터리를 출력으로 추가하도록 테스트 작업
+    outputs.dir snippetsDir
+}
+
+// ext에서 정의한 경로에 스니펫을 넣어준뒤 테스트를 진행한다.
+asciidoctor {
+    configurations "asciidoctorExtensions"
+    inputs.dir snippetsDir
+    dependsOn test
+}
+
+asciidoctor.doFirst {
+    delete file('src/main/resources/static/docs')
+}
+
+task copyDocument(type: Copy) {
+    dependsOn asciidoctor
+    from file("build/docs/asciidoc")
+//    into file("${sourceSets.main.output.resourcesDir}/static/docs")
+    into file("src/main/resources/static/docs")
+}
+
+build {
+    dependsOn copyDocument
 }
 
 jar {
