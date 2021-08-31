@@ -20,7 +20,7 @@ pipeline {
             steps {
                 echo 'Ae-stagram Build'
 
-                sh './gradlew build -x test'
+                sh './gradlew build'
             }
         }
     }
