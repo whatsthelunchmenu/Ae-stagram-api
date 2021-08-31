@@ -15,10 +15,12 @@ public class UserService {
 
     @Transactional
     public void addUser(UserDto userDto) {
-        userRepository.save(User.builder()
-            .uuid(userDto.getUuid())
-            .displayName(userDto.getDisplayName())
-            .email(userDto.getEmail())
-            .build());
+
+        userRepository.findByUuid(userDto.getUuid())
+            .orElseGet(() -> userRepository.save(User.builder()
+                .uuid(userDto.getUuid())
+                .displayName(userDto.getDisplayName())
+                .email(userDto.getEmail())
+                .build()));
     }
 }
