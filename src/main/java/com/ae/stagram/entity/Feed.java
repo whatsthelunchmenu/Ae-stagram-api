@@ -1,41 +1,36 @@
 package com.ae.stagram.entity;
 
-import javax.persistence.Column;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Table;
-import lombok.AllArgsConstructor;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "User")
-public class User {
-
+@Data
+public class Feed {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NonNull
-    private String uuid;
+    private String content;
 
-    @NonNull
-    private String email;
-
-    @NonNull
-    private String displayName;
-
-    private String profileImage;
+    @ManyToOne
+    private User user;
 
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "feed")
+    private List<Image> images = new ArrayList<>();
 }
