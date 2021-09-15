@@ -1,16 +1,17 @@
 package com.ae.stagram.service;
 
 import com.ae.stagram.dto.FeedDto;
+import com.ae.stagram.dto.ImageDto;
 import com.ae.stagram.dto.MainFeedDto;
 import com.ae.stagram.dto.UserDto;
 import com.ae.stagram.entity.Feed;
 import com.ae.stagram.entity.Image;
 import com.ae.stagram.entity.User;
+import com.ae.stagram.exception.FeedNotFoundException;
 import com.ae.stagram.exception.UserNotFoundException;
 import com.ae.stagram.repository.FeedRepository;
 import com.ae.stagram.repository.ImageRepository;
 import com.ae.stagram.repository.UserRepository;
-import com.google.common.collect.Lists;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +19,6 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
-import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,7 +38,6 @@ public class FeedService {
         User user = userRepository.findByUuid(userDto.getUuid())
             .orElseThrow(() -> new UserNotFoundException("등록되지 않은 사용자입니다."));
 
-        List<Image> images = new ArrayList<>();
         LocalDateTime createdAt = LocalDateTime.now();
         LocalDateTime updatedAt = LocalDateTime.now();
 
@@ -49,18 +48,40 @@ public class FeedService {
             .updatedAt(updatedAt)
             .build();
 
-        for (String path : feedDto.getImages()) {
-            images.add(Image.builder()
-                .imagePath(path)
-                .createdAt(createdAt)
-                .updatedAt(updatedAt)
-                .feed(newFeed)
-                .build());
-        }
-        newFeed.setImages(images);
+        List<Image> feedImages = getFeedImages(feedDto.getImages(), newFeed);
+        newFeed.setImages(feedImages);
 
         feedRepository.save(newFeed);
-        imageRepository.saveAll(images);
+        imageRepository.saveAll(feedImages);
+    }
+
+    @Transactional
+    public MainFeedDto updateFeed(Long feedId, FeedDto feedDto) {
+        Feed feed = feedRepository.findById(feedId)
+            .orElseThrow(() -> new FeedNotFoundException("존재하지 않는 피드입니다."));
+
+        Feed updateFeed = Feed.builder()
+            .id(feed.getId())
+            .content(feedDto.getContent())
+            .user(feed.getUser())
+            .createdAt(feed.getCreatedAt())
+            .updatedAt(LocalDateTime.now())
+            .build();
+
+        List<ImageDto> updateImages = feedDto.getImages();
+
+        List<Image> feedImages = getFeedImages(updateImages, updateFeed);
+        updateFeed.setImages(feedImages);
+
+        Feed savedFeed = feedRepository.save(updateFeed);
+        imageRepository.saveAll(feedImages);
+
+        return MainFeedDto.builder()
+            .id(savedFeed.getId())
+            .content(savedFeed.getContent())
+            .display_name(savedFeed.getContent())
+            .images(savedFeed.getImages())
+            .build();
     }
 
     public List<MainFeedDto> getMainFeeds() {
@@ -70,12 +91,33 @@ public class FeedService {
         List<MainFeedDto> mainFeedDtos = new ArrayList<>();
         for (Feed feed : feeds) {
             mainFeedDtos.add(MainFeedDto.builder()
-                .uuid(feed.getUser().getUuid())
+                .id(feed.getId())
                 .display_name(feed.getUser().getDisplayName())
                 .content(feed.getContent())
                 .images(feed.getImages())
                 .build());
         }
         return mainFeedDtos;
+    }
+
+    public void removeFeed(Long feedId){
+        feedRepository.deleteById(feedId);
+    }
+
+    private List<Image> getFeedImages(List<ImageDto> imagePaths, Feed feed) {
+        List<Image> paths = new ArrayList<>();
+        LocalDateTime createdAt = LocalDateTime.now();
+        LocalDateTime updatedAt = LocalDateTime.now();
+
+        for (ImageDto imageDto : imagePaths) {
+            paths.add(Image.builder()
+                .id(imageDto.getId())
+                .imagePath(imageDto.getPath())
+                .createdAt(createdAt)
+                .updatedAt(updatedAt)
+                .feed(feed)
+                .build());
+        }
+        return paths;
     }
 }

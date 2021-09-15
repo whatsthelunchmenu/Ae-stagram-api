@@ -3,6 +3,7 @@ package com.ae.stagram.entity;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -35,7 +36,7 @@ public class Feed {
 
     private LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "feed")
+    @OneToMany(mappedBy = "feed", cascade = CascadeType.REMOVE)
     @ToString.Exclude
     private List<Image> images = new ArrayList<>();
 }

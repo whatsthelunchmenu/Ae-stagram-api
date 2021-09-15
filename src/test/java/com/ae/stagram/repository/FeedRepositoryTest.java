@@ -3,6 +3,7 @@ package com.ae.stagram.repository;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.ae.stagram.dto.FeedDto;
+import com.ae.stagram.dto.ImageDto;
 import com.ae.stagram.entity.Feed;
 import com.ae.stagram.entity.Image;
 import com.ae.stagram.entity.User;
@@ -58,7 +59,8 @@ class FeedRepositoryTest {
 
         FeedDto feedDto = FeedDto.builder()
             .content("컨텐츠 내용입니다.")
-            .images(Lists.newArrayList("http://image1.jpg", "http://image2.jpg"))
+            .images(Lists.newArrayList(ImageDto.builder().path("http://image1.jpg").build(),
+                ImageDto.builder().path("http://image2.jpg").build()))
             .build();
 
         Feed newFeed = Feed.builder()
@@ -68,9 +70,9 @@ class FeedRepositoryTest {
             .updatedAt(updatedAt)
             .build();
 
-        for (String path : feedDto.getImages()) {
+        for (ImageDto path : feedDto.getImages()) {
             images.add(Image.builder()
-                .imagePath(path)
+                .imagePath(path.getPath())
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .feed(newFeed)
