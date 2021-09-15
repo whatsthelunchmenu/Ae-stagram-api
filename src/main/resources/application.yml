@@ -26,7 +26,7 @@ spring:
     url: jdbc:mysql://localhost:3306/Ae_stagram?useSSL=false&characterEncoding=UTF-8&serverTimezone=UTC
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: dev
-    password: 1234
+    password: asdf1234!
 
 firebase:
   sdk:

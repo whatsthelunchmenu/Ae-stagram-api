@@ -3,6 +3,7 @@ package com.ae.stagram.service;
 import com.ae.stagram.dto.UserDto;
 import com.ae.stagram.entity.User;
 import com.ae.stagram.repository.UserRepository;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +22,8 @@ public class UserService {
                 .uuid(userDto.getUuid())
                 .displayName(userDto.getDisplayName())
                 .email(userDto.getEmail())
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
                 .build()));
     }
 }
