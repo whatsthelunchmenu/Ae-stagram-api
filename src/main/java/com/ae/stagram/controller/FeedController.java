@@ -71,8 +71,15 @@ public class FeedController {
     }
 
     @DeleteMapping("{id}")
-    public ResponseEntity<ResponseMessage> deleteFeed(@PathVariable("id") Long id){
+    public ResponseEntity<ResponseMessage> deleteFeed(@PathVariable("id") Long id) {
         feedService.removeFeed(id);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok().body(ResponseMessage.builder()
+            .header(ResponseMessageHeader.builder()
+                .result(true)
+                .message("")
+                .status(HttpStatus.OK.value())
+                .build())
+            .body(null)
+            .build());
     }
 }

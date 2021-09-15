@@ -100,7 +100,7 @@ public class FeedService {
         return mainFeedDtos;
     }
 
-    public void removeFeed(Long feedId){
+    public void removeFeed(Long feedId) {
         feedRepository.deleteById(feedId);
     }
 
