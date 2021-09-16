@@ -1,6 +1,6 @@
 package com.ae.stagram.domain.feed.api;
 
-import com.ae.stagram.domain.feed.dto.FeedDto;
+import com.ae.stagram.domain.feed.dto.FeedRequest;
 import com.ae.stagram.domain.user.dto.UserDto;
 import com.ae.stagram.global.common.ResponseMessage;
 import com.ae.stagram.global.common.ResponseMessageHeader;
@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -26,10 +27,10 @@ public class FeedController {
     private final FeedService feedService;
 
     @PostMapping
-    public ResponseEntity<ResponseMessage> createFeed(@RequestBody FeedDto feedDto,
+    public ResponseEntity<ResponseMessage> createFeed(@RequestBody FeedRequest request,
         @RequestAttribute(value = "firebaseUser") UserDto userDto) {
 
-        feedService.insertFeed(feedDto, userDto);
+        feedService.insertFeed(request, userDto);
 
         return ResponseEntity.ok().body(ResponseMessage.builder()
             .header(ResponseMessageHeader.builder()
@@ -41,9 +42,9 @@ public class FeedController {
             .build());
     }
 
-    @PutMapping(value = "{id}")
+    @PatchMapping(value = "{id}")
     public ResponseEntity<ResponseMessage> putFeed(@PathVariable("id") Long id,
-        @RequestBody FeedDto feedDto) {
+        @RequestBody FeedRequest request) {
 
         return ResponseEntity.ok().body(ResponseMessage.builder()
             .header(ResponseMessageHeader.builder()
@@ -51,7 +52,7 @@ public class FeedController {
                 .message("")
                 .status(HttpStatus.OK.value())
                 .build())
-            .body(feedService.updateFeed(id, feedDto))
+            .body(feedService.updateFeed(id, request))
             .build());
     }
 

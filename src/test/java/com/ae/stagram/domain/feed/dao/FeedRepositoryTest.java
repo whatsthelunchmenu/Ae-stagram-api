@@ -1,11 +1,8 @@
 package com.ae.stagram.domain.feed.dao;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import com.ae.stagram.domain.feed.domain.Feed;
 import com.ae.stagram.domain.feed.domain.Image;
-import com.ae.stagram.domain.feed.dto.FeedDto;
-import com.ae.stagram.domain.feed.dto.ImageDto;
+import com.ae.stagram.domain.feed.dto.FeedRequest;
 import com.ae.stagram.domain.user.dao.UserRepository;
 import com.ae.stagram.domain.user.domain.User;
 import java.time.LocalDateTime;
@@ -56,22 +53,23 @@ class FeedRepositoryTest {
         LocalDateTime createdAt = LocalDateTime.now();
         LocalDateTime updatedAt = LocalDateTime.now();
 
-        FeedDto feedDto = FeedDto.builder()
-            .content("컨텐츠 내용입니다.")
-            .images(Lists.newArrayList(ImageDto.builder().path("http://image1.jpg").build(),
-                ImageDto.builder().path("http://image2.jpg").build()))
+        FeedRequest feedRequest = FeedRequest.builder()
+            .content("컨텐츠 업데이트 내용")
+            .images(Lists.newArrayList(
+                "http://localhost/images/test.jpg",
+                "http://localhost/images/test.jpg"))
             .build();
 
         Feed newFeed = Feed.builder()
-            .content(feedDto.getContent())
+            .content(feedRequest.getContent())
             .user(user)
             .createdAt(createdAt)
             .updatedAt(updatedAt)
             .build();
 
-        for (ImageDto path : feedDto.getImages()) {
+        for (String path : feedRequest.getImages()) {
             images.add(Image.builder()
-                .imagePath(path.getPath())
+                .imagePath(path)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .feed(newFeed)

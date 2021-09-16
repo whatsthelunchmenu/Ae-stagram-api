@@ -2,7 +2,6 @@ package com.ae.stagram.domain.feed.api;
 
 import static com.ae.stagram.global.util.RestDocsUtils.getDocumentRequest;
 import static com.ae.stagram.global.util.RestDocsUtils.getDocumentResponse;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
@@ -21,10 +20,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.ae.stagram.domain.feed.domain.Image;
-import com.ae.stagram.domain.feed.dto.FeedDto;
-import com.ae.stagram.domain.feed.dto.ImageDto;
-import com.ae.stagram.domain.feed.dto.MainFeedDto;
+import com.ae.stagram.domain.feed.dto.FeedRequest;
+import com.ae.stagram.domain.feed.dto.FeedResponse;
 import com.ae.stagram.domain.feed.service.FeedService;
 import com.ae.stagram.domain.user.dto.UserDto;
 import com.ae.stagram.global.config.interceptor.AuthInterceptor;
@@ -34,11 +31,8 @@ import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -46,18 +40,16 @@ import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import org.springframework.restdocs.payload.JsonFieldType;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
-@ExtendWith(value = {RestDocumentationExtension.class, SpringExtension.class,
-    MockitoExtension.class})
-@SpringBootTest
-@Transactional
-@AutoConfigureMockMvc(addFilters = false)
+/**
+ * 기존에는 @SpringBootTest 사용하였지만 굳이 모든 리소스들을 초기화할 필요가 없기 때문에 MVC 테스트를 하기위해 @WebMvcTest을 사용.
+ */
+@ExtendWith(value = RestDocumentationExtension.class)
+@WebMvcTest(FeedController.class)
 class FeedControllerTest {
 
     @MockBean
@@ -92,13 +84,14 @@ class FeedControllerTest {
     @Test
     public void createFeed_피드_추가() throws Exception {
 
-        FeedDto feedDto = FeedDto.builder()
+        FeedRequest feedRequest = FeedRequest.builder()
             .content("컨텐츠 내용")
             .images(Lists.newArrayList(
-                ImageDto.builder().path("http://localhost/images/test.jpg").build()))
+                "http://localhost/images/test.jpg",
+                "http://localhost/images/test.jpg"))
             .build();
 
-        willDoNothing().given(feedService).insertFeed(feedDto, this.userDto);
+        willDoNothing().given(feedService).insertFeed(feedRequest, this.userDto);
         given(authInterceptor.preHandle(any(), any(), any()))
             .willReturn(true);
 
@@ -110,7 +103,7 @@ class FeedControllerTest {
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
             .characterEncoding("utf-8")
-            .content(objectMapper.writeValueAsString(feedDto)));
+            .content(objectMapper.writeValueAsString(feedRequest)));
 
         //then
         result.andExpect(status().isOk())
@@ -123,12 +116,9 @@ class FeedControllerTest {
                         headerWithName(HttpHeaders.AUTHORIZATION).description("FireBase Access 토큰")
                     ),
                     requestFields(
-                        fieldWithPath("id").type(JsonFieldType.NULL).description("피드 아이디"),
                         fieldWithPath("content").type(JsonFieldType.STRING).description("피드 본문 내용"),
-                        fieldWithPath("images.[].id").type(JsonFieldType.NULL)
-                            .description("이미지 아이디"),
-                        fieldWithPath("images.[].path").type(JsonFieldType.STRING)
-                            .description("이미지 url")
+                        fieldWithPath("images").type(JsonFieldType.ARRAY)
+                            .description("이미지 목록")
                     ),
                     responseFields(
                         fieldWithPath("header.result").type(JsonFieldType.BOOLEAN)
@@ -143,26 +133,22 @@ class FeedControllerTest {
 
     @Test
     public void putFeed_피드_업데이트() throws Exception {
-        FeedDto feedDto = FeedDto.builder()
-            .id(1L)
-            .content("컨텐츠 내용")
+        FeedRequest feedRequest = FeedRequest.builder()
+            .content("컨텐츠 업데이트 내용")
             .images(Lists.newArrayList(
-                ImageDto.builder()
-                    .id(1L)
-                    .path("http://localhost/images/test.jpg").build()))
+                "http://localhost/images/test.jpg",
+                "http://localhost/images/test.jpg"))
             .build();
 
-        given(feedService.updateFeed(anyLong(), any(FeedDto.class)))
-            .willReturn(MainFeedDto.builder()
+        given(feedService.updateFeed(anyLong(), any(FeedRequest.class)))
+            .willReturn(FeedResponse.builder()
                 .id(1L)
                 .content("컨텐츠 내용")
                 .display_name("홍길동")
-                .images(Lists.newArrayList(Image.builder()
-                    .id(1L)
-                    .imagePath("http://localhost/images/test.jpg")
-                    .createdAt(LocalDateTime.now())
-                    .updatedAt(LocalDateTime.now())
-                    .build()))
+                .images(Lists.newArrayList("http://localhost/images/test.jpg",
+                    "http://localhost/images/test.jpg"))
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
                 .build());
         given(authInterceptor.preHandle(any(), any(), any()))
             .willReturn(true);
@@ -170,14 +156,14 @@ class FeedControllerTest {
         Long id = 1L;
         //when
         ResultActions result = this.mockMvc.perform(
-            RestDocumentationRequestBuilders.put("/feeds/{id}", id)
+            RestDocumentationRequestBuilders.patch("/feeds/{id}", id)
                 .requestAttr("firebaseUser", this.userDto)
                 .header("Authorization",
                     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c")
                 .accept(MediaType.APPLICATION_JSON)
                 .characterEncoding("utf-8")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(feedDto)));
+                .content(objectMapper.writeValueAsString(feedRequest)));
 
         //then
         result.andExpect(status().isOk())
@@ -194,12 +180,9 @@ class FeedControllerTest {
                         parameterWithName("id").description("업데이트 할 피드 아이디")
                     ),
                     requestFields(
-                        fieldWithPath("id").type(JsonFieldType.NUMBER).description("피드 아이디"),
                         fieldWithPath("content").type(JsonFieldType.STRING).description("피드 본문 내용"),
-                        fieldWithPath("images.[].id").type(JsonFieldType.NUMBER)
-                            .description("이미지 아이디"),
-                        fieldWithPath("images.[].path").type(JsonFieldType.STRING)
-                            .description("이미지 url")
+                        fieldWithPath("images").type(JsonFieldType.ARRAY)
+                            .description("이미지 목록")
                     ),
                     responseFields(
                         fieldWithPath("header.result").type(JsonFieldType.BOOLEAN)
@@ -213,14 +196,12 @@ class FeedControllerTest {
                             .description("유저 이름"),
                         fieldWithPath("body.content").type(JsonFieldType.STRING)
                             .description("피드 본문 내용"),
-                        fieldWithPath("body.images.[].id").type(JsonFieldType.NUMBER)
-                            .description("해당 피드의 이미지 아이디"),
-                        fieldWithPath("body.images.[].imagePath").type(JsonFieldType.STRING)
-                            .description("해당 피드의 이미지 경로"),
-                        fieldWithPath("body.images.[].createdAt").type(JsonFieldType.STRING)
-                            .description("이미지 생성 날짜 및 시간"),
-                        fieldWithPath("body.images.[].updatedAt").type(JsonFieldType.STRING)
-                            .description("최근 이미지 업데이트 된 날짜 및 시간")
+                        fieldWithPath("body.images").type(JsonFieldType.ARRAY)
+                            .description("해당 피드의 이미지 목록"),
+                        fieldWithPath("body.createdAt").type(JsonFieldType.STRING)
+                            .description("피드 생성 시간"),
+                        fieldWithPath("body.updatedAt").type(JsonFieldType.STRING)
+                            .description("피드 수정 시간")
                     )
                 )
             );
@@ -228,16 +209,14 @@ class FeedControllerTest {
 
     @Test
     public void getFeeds_피드_검색() throws Exception {
-        given(feedService.getMainFeeds()).willReturn(Lists.newArrayList(MainFeedDto.builder()
+        given(feedService.getMainFeeds()).willReturn(Lists.newArrayList(FeedResponse.builder()
             .id(1L)
             .display_name("호돌맨")
             .content("본문 내용")
-            .images(Lists.newArrayList(Image.builder()
-                .id(1L)
-                .imagePath("http://image.jpg")
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .build()))
+            .images(Lists.newArrayList("http://localhost/images/test.jpg",
+                "http://localhost/images/test.jpg"))
+            .createdAt(LocalDateTime.now())
+            .updatedAt(LocalDateTime.now())
             .build()));
 
         given(authInterceptor.preHandle(any(), any(), any()))
@@ -276,14 +255,12 @@ class FeedControllerTest {
                             .description("유저 이름"),
                         fieldWithPath("body.[].content").type(JsonFieldType.STRING)
                             .description("피드 본문 내용"),
-                        fieldWithPath("body.[].images.[].id").type(JsonFieldType.NUMBER)
-                            .description("해당 피드의 이미지 아이디"),
-                        fieldWithPath("body.[].images.[].imagePath").type(JsonFieldType.STRING)
-                            .description("해당 피드의 이미지 경로"),
-                        fieldWithPath("body.[].images.[].createdAt").type(JsonFieldType.STRING)
-                            .description("이미지 생성 날짜 및 시간"),
-                        fieldWithPath("body.[].images.[].updatedAt").type(JsonFieldType.STRING)
-                            .description("최근 이미지 업데이트 된 날짜 및 시간")
+                        fieldWithPath("body.[].images").type(JsonFieldType.ARRAY)
+                            .description("해당 피드의 이미지 목록"),
+                        fieldWithPath("body.[].createdAt").type(JsonFieldType.STRING)
+                            .description("피드 생성 시간"),
+                        fieldWithPath("body.[].updatedAt").type(JsonFieldType.STRING)
+                            .description("피드 수정 시간")
                     )
                 )
             );
