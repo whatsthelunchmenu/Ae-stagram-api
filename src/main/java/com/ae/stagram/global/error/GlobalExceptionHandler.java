@@ -16,26 +16,12 @@ public class GlobalExceptionHandler {
         FirebaseAuthException.class})
     public ResponseEntity<?> AuthException(RuntimeException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-            .body(ResponseMessage.builder()
-                .header(ResponseMessageHeader.builder()
-                    .result(false)
-                    .message(ex.getMessage())
-                    .status(HttpStatus.UNAUTHORIZED.value())
-                    .build())
-                .body(null)
-                .build());
+            .body(ResponseMessage.fail(ex.getMessage(), HttpStatus.UNAUTHORIZED));
     }
 
     @ExceptionHandler(value = UserNotFoundException.class)
     public ResponseEntity<?> UserException(RuntimeException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-            .body(ResponseMessage.builder()
-                .header(ResponseMessageHeader.builder()
-                    .result(false)
-                    .message(ex.getMessage())
-                    .status(HttpStatus.UNAUTHORIZED.value())
-                    .build())
-                .body(null)
-                .build());
+            .body(ResponseMessage.fail(ex.getMessage(), HttpStatus.UNAUTHORIZED));
     }
 }

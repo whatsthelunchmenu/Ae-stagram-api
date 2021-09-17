@@ -24,14 +24,7 @@ public class UserController {
         @RequestAttribute(value = "firebaseUser") UserDto userDto) {
 
         userService.addUser(userDto);
-
-        return ResponseEntity.ok().body(ResponseMessage.builder()
-            .header(ResponseMessageHeader.builder()
-                .result(true)
-                .message("")
-                .status(HttpStatus.OK.value())
-                .build()).body(null)
-            .build());
+        return ResponseEntity.ok().body(ResponseMessage.success());
     }
 
 }
