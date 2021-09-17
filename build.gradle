@@ -52,7 +52,7 @@ test {
     outputs.dir snippetsDir
     // Jenkins에서 빌드할때에는 JPA구성이 되어있지 않아 빌드시에는 제외하도록 설정
     filter {
-        excludeTestsMatching "com.ae.stagram.repository.*"
+        excludeTestsMatching "com.ae.stagram.domain.**.dao.*"
     }
 }
 
