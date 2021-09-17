@@ -72,6 +72,7 @@ public class FeedService {
             imageRepository.saveAll(feedImages);
         }
 
+        feed.setUpdatedAt(LocalDateTime.now());
         Feed savedFeed = feedRepository.save(feed);
         List<String> imagePaths = savedFeed.getImages().stream()
             .map(image -> image.getImagePath())
@@ -82,6 +83,8 @@ public class FeedService {
             .content(savedFeed.getContent())
             .display_name(savedFeed.getContent())
             .images(imagePaths)
+            .createdAt(savedFeed.getCreatedAt())
+            .updatedAt(savedFeed.getUpdatedAt())
             .build();
     }
 
