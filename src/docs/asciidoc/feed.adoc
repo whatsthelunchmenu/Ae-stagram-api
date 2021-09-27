@@ -105,6 +105,8 @@ include::{snippets}/feed-update/response-fields.adoc[]
 
 ==== 요청 예시
 include::{snippets}/feed-read/http-request.adoc[]
+==== 요청 파라미터
+include::{snippets}/feed-read/request-parameters.adoc[]
 ==== 응답 예시
 include::{snippets}/feed-read/http-response.adoc[]
 ==== 요청 헤더

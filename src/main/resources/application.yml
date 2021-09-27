@@ -17,6 +17,8 @@ logging:
   level:
     org.hibernate: info
 
+app:
+  page-size: 10
 ---
 spring:
   config:
@@ -32,6 +34,8 @@ firebase:
   sdk:
     path: firebase-accesskey.json
 
+app:
+  page-size: 10
 ---
 spring:
   config:
@@ -48,6 +52,8 @@ firebase:
   sdk:
     path: ${FIREBASE_SDK_PATH}
 
+app:
+  page-size: 10
 ---
 spring:
   config:
@@ -63,3 +69,6 @@ spring:
 firebase:
   sdk:
     path: ${FIREBASE_SDK_PATH}
+
+app:
+  page-size: 10

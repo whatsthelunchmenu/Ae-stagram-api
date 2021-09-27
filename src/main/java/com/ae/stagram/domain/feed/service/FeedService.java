@@ -16,6 +16,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
@@ -30,6 +33,9 @@ public class FeedService {
     private final UserRepository userRepository;
 
     private final ImageRepository imageRepository;
+
+    @Value("${app.page-size}")
+    private int pageSize;
 
     @Transactional
     public void insertFeed(FeedRequest createFeedRequest, UserDto userDto) {
@@ -88,12 +94,14 @@ public class FeedService {
             .build();
     }
 
-    public List<FeedResponse> getMainFeeds() {
+    public List<FeedResponse> getMainFeeds(int pageIndex) {
 
-        List<Feed> feeds = feedRepository.findAll(Sort.by(Direction.DESC, "updatedAt"));
+        PageRequest pageRequest = PageRequest.of(pageIndex - 1, pageSize,
+            Sort.by(Direction.DESC, "updatedAt"));
+        Page<Feed> pageFeeds = feedRepository.findAll(pageRequest);
 
         List<FeedResponse> mainFeedDtos = new ArrayList<>();
-        for (Feed feed : feeds) {
+        for (Feed feed : pageFeeds) {
             List<String> imagePaths = feed.getImages().stream()
                 .map(image -> image.getImagePath())
                 .collect(Collectors.toList());
@@ -103,6 +111,8 @@ public class FeedService {
                 .display_name(feed.getUser().getDisplayName())
                 .content(feed.getContent())
                 .images(imagePaths)
+                .createdAt(feed.getCreatedAt())
+                .updatedAt(feed.getUpdatedAt())
                 .build());
         }
         return mainFeedDtos;

@@ -15,6 +15,7 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.requestF
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
+import static org.springframework.restdocs.request.RequestDocumentation.requestParameters;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -209,7 +210,8 @@ class FeedControllerTest {
 
     @Test
     public void getFeeds_피드_검색() throws Exception {
-        given(feedService.getMainFeeds()).willReturn(Lists.newArrayList(FeedResponse.builder()
+        int pageIndex = 1;
+        given(feedService.getMainFeeds(pageIndex)).willReturn(Lists.newArrayList(FeedResponse.builder()
             .id(1L)
             .display_name("호돌맨")
             .content("본문 내용")
@@ -229,7 +231,8 @@ class FeedControllerTest {
                 "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c")
             .contentType(MediaType.APPLICATION_JSON)
             .characterEncoding("utf-8")
-            .accept(MediaType.APPLICATION_JSON));
+            .accept(MediaType.APPLICATION_JSON)
+            .param("page", String.valueOf(pageIndex)));
 
         //then
         result.andExpect(status().isOk())
@@ -241,6 +244,9 @@ class FeedControllerTest {
                     requestHeaders(
                         headerWithName(org.apache.http.HttpHeaders.AUTHORIZATION).description(
                             "FireBase Access 토큰")
+                    ),
+                    requestParameters(
+                        parameterWithName("page").description("검색할 피드 페이지 번호 `(최소 1이상)`")
                     ),
                     responseFields(
                         fieldWithPath("header.result").type(JsonFieldType.BOOLEAN)

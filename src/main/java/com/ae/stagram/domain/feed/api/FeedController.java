@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -41,8 +42,8 @@ public class FeedController {
     }
 
     @GetMapping
-    public ResponseEntity<ResponseMessage> getFeeds() {
-        return ResponseEntity.ok().body(ResponseMessage.success(feedService.getMainFeeds()));
+    public ResponseEntity<ResponseMessage> getFeeds(@RequestParam("page") int pageIndex) {
+        return ResponseEntity.ok().body(ResponseMessage.success(feedService.getMainFeeds(pageIndex)));
     }
 
     @DeleteMapping("{id}")
