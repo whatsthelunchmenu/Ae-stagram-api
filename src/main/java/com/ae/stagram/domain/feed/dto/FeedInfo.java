@@ -11,10 +11,17 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-public class FeedResponse {
+public class FeedInfo {
 
-    private boolean hasNext;
+    private Long id;
 
-    private List<FeedInfo> feedInfos;
+    private String display_name;
 
+    private String content;
+
+    private List<String> images;
+
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
 }

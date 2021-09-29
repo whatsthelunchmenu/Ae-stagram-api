@@ -4,6 +4,7 @@ import com.ae.stagram.domain.feed.dao.FeedRepository;
 import com.ae.stagram.domain.feed.dao.ImageRepository;
 import com.ae.stagram.domain.feed.domain.Feed;
 import com.ae.stagram.domain.feed.domain.Image;
+import com.ae.stagram.domain.feed.dto.FeedInfo;
 import com.ae.stagram.domain.feed.dto.FeedRequest;
 import com.ae.stagram.domain.feed.dto.FeedResponse;
 import com.ae.stagram.domain.feed.exception.FeedNotFoundException;
@@ -17,10 +18,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -61,7 +59,7 @@ public class FeedService {
     }
 
     @Transactional
-    public FeedResponse updateFeed(Long feedId, FeedRequest feedRequest) {
+    public FeedInfo updateFeed(Long feedId, FeedRequest feedRequest) {
         Feed feed = feedRepository.findById(feedId)
             .orElseThrow(() -> new FeedNotFoundException("존재하지 않는 피드입니다."));
 
@@ -84,7 +82,7 @@ public class FeedService {
             .map(image -> image.getImagePath())
             .collect(Collectors.toList());
 
-        return FeedResponse.builder()
+        return FeedInfo.builder()
             .id(savedFeed.getId())
             .content(savedFeed.getContent())
             .display_name(savedFeed.getContent())
@@ -94,19 +92,17 @@ public class FeedService {
             .build();
     }
 
-    public List<FeedResponse> getMainFeeds(int pageIndex) {
+    public FeedResponse getMainFeeds(Long cursorIndex, LocalDateTime updatedAt) {
 
-        PageRequest pageRequest = PageRequest.of(pageIndex - 1, pageSize,
-            Sort.by(Direction.DESC, "updatedAt"));
-        Page<Feed> pageFeeds = feedRepository.findAll(pageRequest);
+        List<Feed> pageFeeds = getFeedPagenation(cursorIndex, updatedAt);
 
-        List<FeedResponse> mainFeedDtos = new ArrayList<>();
+        List<FeedInfo> feedInfos = new ArrayList<>();
         for (Feed feed : pageFeeds) {
             List<String> imagePaths = feed.getImages().stream()
                 .map(image -> image.getImagePath())
                 .collect(Collectors.toList());
 
-            mainFeedDtos.add(FeedResponse.builder()
+            feedInfos.add(FeedInfo.builder()
                 .id(feed.getId())
                 .display_name(feed.getUser().getDisplayName())
                 .content(feed.getContent())
@@ -115,7 +111,21 @@ public class FeedService {
                 .updatedAt(feed.getUpdatedAt())
                 .build());
         }
-        return mainFeedDtos;
+
+        return FeedResponse.builder()
+            .hasNext(pageFeeds.size() == pageSize)
+            .feedInfos(feedInfos)
+            .build();
+    }
+
+    private List<Feed> getFeedPagenation(Long cursorIndex, LocalDateTime updatedTime) {
+        PageRequest pageRequest = PageRequest.of(0, pageSize);
+        List<Feed> feeds = cursorIndex == null
+                ? feedRepository.findAllByOrderByUpdatedAtDesc(pageRequest)
+                : feedRepository.findPageList(cursorIndex, updatedTime,
+                    pageRequest);
+
+        return feeds;
     }
 
     public void removeFeed(Long feedId) {
