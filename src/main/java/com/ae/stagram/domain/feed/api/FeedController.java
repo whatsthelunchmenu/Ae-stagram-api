@@ -4,7 +4,9 @@ import com.ae.stagram.domain.feed.dto.FeedRequest;
 import com.ae.stagram.domain.feed.service.FeedService;
 import com.ae.stagram.domain.user.dto.UserDto;
 import com.ae.stagram.global.common.ResponseMessage;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -42,8 +44,10 @@ public class FeedController {
     }
 
     @GetMapping
-    public ResponseEntity<ResponseMessage> getFeeds(@RequestParam("page") int pageIndex) {
-        return ResponseEntity.ok().body(ResponseMessage.success(feedService.getMainFeeds(pageIndex)));
+    public ResponseEntity<ResponseMessage> getFeeds(
+        @RequestParam(value = "nextToken", required = false) String nextToken) {
+        return ResponseEntity.ok()
+            .body(ResponseMessage.success(feedService.getMainFeeds(nextToken)));
     }
 
     @DeleteMapping("{id}")

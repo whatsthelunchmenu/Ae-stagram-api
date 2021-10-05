@@ -21,11 +21,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.ae.stagram.domain.feed.dto.FeedInfo;
 import com.ae.stagram.domain.feed.dto.FeedRequest;
 import com.ae.stagram.domain.feed.dto.FeedResponse;
 import com.ae.stagram.domain.feed.service.FeedService;
 import com.ae.stagram.domain.user.dto.UserDto;
 import com.ae.stagram.global.config.interceptor.AuthInterceptor;
+import com.ae.stagram.global.util.pageable.PageNationUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDateTime;
 import org.assertj.core.util.Lists;
@@ -33,6 +35,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
@@ -65,6 +68,9 @@ class FeedControllerTest {
     private MockMvc mockMvc;
 
     private UserDto userDto;
+
+    @Value("${app.page-size}")
+    private int pageSize;
 
     @BeforeEach
     public void setUpMockMvc(WebApplicationContext webApplicationContext,
@@ -142,7 +148,7 @@ class FeedControllerTest {
             .build();
 
         given(feedService.updateFeed(anyLong(), any(FeedRequest.class)))
-            .willReturn(FeedResponse.builder()
+            .willReturn(FeedInfo.builder()
                 .id(1L)
                 .content("컨텐츠 내용")
                 .display_name("홍길동")
@@ -210,16 +216,26 @@ class FeedControllerTest {
 
     @Test
     public void getFeeds_피드_검색() throws Exception {
-        int pageIndex = 1;
-        given(feedService.getMainFeeds(pageIndex)).willReturn(Lists.newArrayList(FeedResponse.builder()
-            .id(1L)
-            .display_name("호돌맨")
-            .content("본문 내용")
-            .images(Lists.newArrayList("http://localhost/images/test.jpg",
-                "http://localhost/images/test.jpg"))
-            .createdAt(LocalDateTime.now())
-            .updatedAt(LocalDateTime.now())
-            .build()));
+        Long cursorIndex = 1L;
+        LocalDateTime updatedAt = LocalDateTime.now();
+        String nextToken = String.format("%d%s%s", cursorIndex, PageNationUtils.splitPageInfo, updatedAt);
+        System.out.println(nextToken);
+
+        given(feedService.getMainFeeds(nextToken)).willReturn(
+            FeedResponse.builder()
+                .feedInfos(Lists.newArrayList(FeedInfo.builder()
+                    .id(1L)
+                    .display_name("호돌맨")
+                    .content("본문 내용")
+                    .images(Lists.newArrayList("http://localhost/images/test.jpg",
+                        "http://localhost/images/test.jpg"))
+                    .createdAt(LocalDateTime.now())
+                    .updatedAt(LocalDateTime.now())
+                    .build()))
+                .hasNextToken(String.format("%d%s%s", 1L, PageNationUtils.splitPageInfo, LocalDateTime.now()))
+                .maxResults(pageSize)
+                .build()
+        );
 
         given(authInterceptor.preHandle(any(), any(), any()))
             .willReturn(true);
@@ -232,7 +248,7 @@ class FeedControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .characterEncoding("utf-8")
             .accept(MediaType.APPLICATION_JSON)
-            .param("page", String.valueOf(pageIndex)));
+            .param("nextToken", nextToken));
 
         //then
         result.andExpect(status().isOk())
@@ -246,7 +262,7 @@ class FeedControllerTest {
                             "FireBase Access 토큰")
                     ),
                     requestParameters(
-                        parameterWithName("page").description("검색할 피드 페이지 번호 `(최소 1이상)`")
+                        parameterWithName("nextToken").description("다음 피드 요청 토큰, 없으면 `Null`")
                     ),
                     responseFields(
                         fieldWithPath("header.result").type(JsonFieldType.BOOLEAN)
@@ -255,17 +271,21 @@ class FeedControllerTest {
                             .description("메시지"),
                         fieldWithPath("header.status").type(JsonFieldType.NUMBER)
                             .description("Http 상태 코드"),
-                        fieldWithPath("body.[].id").type(JsonFieldType.NUMBER)
+                        fieldWithPath("body.hasNextToken").type(JsonFieldType.STRING)
+                            .description("다음 페이지 토큰"),
+                        fieldWithPath("body.maxResults").type(JsonFieldType.NUMBER)
+                            .description("최대 페이지 갯수"),
+                        fieldWithPath("body.feedInfos.[].id").type(JsonFieldType.NUMBER)
                             .description("피드 아이디"),
-                        fieldWithPath("body.[].display_name").type(JsonFieldType.STRING)
+                        fieldWithPath("body.feedInfos.[].display_name").type(JsonFieldType.STRING)
                             .description("유저 이름"),
-                        fieldWithPath("body.[].content").type(JsonFieldType.STRING)
+                        fieldWithPath("body.feedInfos.[].content").type(JsonFieldType.STRING)
                             .description("피드 본문 내용"),
-                        fieldWithPath("body.[].images").type(JsonFieldType.ARRAY)
+                        fieldWithPath("body.feedInfos.[].images").type(JsonFieldType.ARRAY)
                             .description("해당 피드의 이미지 목록"),
-                        fieldWithPath("body.[].createdAt").type(JsonFieldType.STRING)
+                        fieldWithPath("body.feedInfos.[].createdAt").type(JsonFieldType.STRING)
                             .description("피드 생성 시간"),
-                        fieldWithPath("body.[].updatedAt").type(JsonFieldType.STRING)
+                        fieldWithPath("body.feedInfos.[].updatedAt").type(JsonFieldType.STRING)
                             .description("피드 수정 시간")
                     )
                 )

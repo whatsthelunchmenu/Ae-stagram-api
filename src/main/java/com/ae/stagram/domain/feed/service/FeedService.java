@@ -4,6 +4,7 @@ import com.ae.stagram.domain.feed.dao.FeedRepository;
 import com.ae.stagram.domain.feed.dao.ImageRepository;
 import com.ae.stagram.domain.feed.domain.Feed;
 import com.ae.stagram.domain.feed.domain.Image;
+import com.ae.stagram.domain.feed.dto.FeedInfo;
 import com.ae.stagram.domain.feed.dto.FeedRequest;
 import com.ae.stagram.domain.feed.dto.FeedResponse;
 import com.ae.stagram.domain.feed.exception.FeedNotFoundException;
@@ -11,18 +12,15 @@ import com.ae.stagram.domain.user.dao.UserRepository;
 import com.ae.stagram.domain.user.domain.User;
 import com.ae.stagram.domain.user.dto.UserDto;
 import com.ae.stagram.domain.user.exception.UserNotFoundException;
+import com.ae.stagram.global.util.pageable.PageNationUtils;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -34,8 +32,7 @@ public class FeedService {
 
     private final ImageRepository imageRepository;
 
-    @Value("${app.page-size}")
-    private int pageSize;
+    private final PageNationUtils pageNationUtil;
 
     @Transactional
     public void insertFeed(FeedRequest createFeedRequest, UserDto userDto) {
@@ -61,7 +58,7 @@ public class FeedService {
     }
 
     @Transactional
-    public FeedResponse updateFeed(Long feedId, FeedRequest feedRequest) {
+    public FeedInfo updateFeed(Long feedId, FeedRequest feedRequest) {
         Feed feed = feedRepository.findById(feedId)
             .orElseThrow(() -> new FeedNotFoundException("존재하지 않는 피드입니다."));
 
@@ -84,7 +81,7 @@ public class FeedService {
             .map(image -> image.getImagePath())
             .collect(Collectors.toList());
 
-        return FeedResponse.builder()
+        return FeedInfo.builder()
             .id(savedFeed.getId())
             .content(savedFeed.getContent())
             .display_name(savedFeed.getContent())
@@ -94,19 +91,26 @@ public class FeedService {
             .build();
     }
 
-    public List<FeedResponse> getMainFeeds(int pageIndex) {
+    public FeedResponse getMainFeeds(String nextToken) {
+        Long cursorIndex = null;
+        LocalDateTime updatedAt = null;
 
-        PageRequest pageRequest = PageRequest.of(pageIndex - 1, pageSize,
-            Sort.by(Direction.DESC, "updatedAt"));
-        Page<Feed> pageFeeds = feedRepository.findAll(pageRequest);
+        if (StringUtils.hasText(nextToken)) {
+            String[] values = nextToken.split(PageNationUtils.splitPageInfo);
 
-        List<FeedResponse> mainFeedDtos = new ArrayList<>();
+            cursorIndex = Long.parseLong(values[0]);
+            updatedAt = LocalDateTime.parse(values[1]);
+        }
+
+        List<Feed> pageFeeds = pageNationUtil.getFeedPagenation(cursorIndex, updatedAt);
+
+        List<FeedInfo> feedInfos = new ArrayList<>();
         for (Feed feed : pageFeeds) {
             List<String> imagePaths = feed.getImages().stream()
                 .map(image -> image.getImagePath())
                 .collect(Collectors.toList());
 
-            mainFeedDtos.add(FeedResponse.builder()
+            feedInfos.add(FeedInfo.builder()
                 .id(feed.getId())
                 .display_name(feed.getUser().getDisplayName())
                 .content(feed.getContent())
@@ -115,7 +119,20 @@ public class FeedService {
                 .updatedAt(feed.getUpdatedAt())
                 .build());
         }
-        return mainFeedDtos;
+
+        int feedCount = feedInfos.size();
+        String token = "";
+        if (feedCount > 0) {
+            FeedInfo feedInfo = feedInfos.get(feedCount - 1);
+            token = String.format("%d%s%s", feedInfo.getId(), PageNationUtils.splitPageInfo,
+                feedInfo.getUpdatedAt());
+        }
+
+        return FeedResponse.builder()
+            .hasNextToken(token)
+            .feedInfos(feedInfos)
+            .maxResults(pageNationUtil.getPageSize())
+            .build();
     }
 
     public void removeFeed(Long feedId) {
