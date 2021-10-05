@@ -13,7 +13,9 @@ import lombok.NoArgsConstructor;
 @Getter
 public class FeedResponse {
 
-    private boolean hasNext;
+    private String hasNextToken;
+
+    private int maxResults;
 
     private List<FeedInfo> feedInfos;
 

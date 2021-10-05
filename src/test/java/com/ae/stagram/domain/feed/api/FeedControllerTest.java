@@ -27,6 +27,7 @@ import com.ae.stagram.domain.feed.dto.FeedResponse;
 import com.ae.stagram.domain.feed.service.FeedService;
 import com.ae.stagram.domain.user.dto.UserDto;
 import com.ae.stagram.global.config.interceptor.AuthInterceptor;
+import com.ae.stagram.global.util.pageable.PageNationUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDateTime;
 import org.assertj.core.util.Lists;
@@ -34,6 +35,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
@@ -66,6 +68,9 @@ class FeedControllerTest {
     private MockMvc mockMvc;
 
     private UserDto userDto;
+
+    @Value("${app.page-size}")
+    private int pageSize;
 
     @BeforeEach
     public void setUpMockMvc(WebApplicationContext webApplicationContext,
@@ -213,7 +218,10 @@ class FeedControllerTest {
     public void getFeeds_피드_검색() throws Exception {
         Long cursorIndex = 1L;
         LocalDateTime updatedAt = LocalDateTime.now();
-        given(feedService.getMainFeeds(cursorIndex, updatedAt)).willReturn(
+        String nextToken = String.format("%d%s%s", cursorIndex, PageNationUtils.splitPageInfo, updatedAt);
+        System.out.println(nextToken);
+
+        given(feedService.getMainFeeds(nextToken)).willReturn(
             FeedResponse.builder()
                 .feedInfos(Lists.newArrayList(FeedInfo.builder()
                     .id(1L)
@@ -224,7 +232,8 @@ class FeedControllerTest {
                     .createdAt(LocalDateTime.now())
                     .updatedAt(LocalDateTime.now())
                     .build()))
-                .hasNext(true)
+                .hasNextToken(String.format("%d%s%s", 1L, PageNationUtils.splitPageInfo, LocalDateTime.now()))
+                .maxResults(pageSize)
                 .build()
         );
 
@@ -239,8 +248,7 @@ class FeedControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .characterEncoding("utf-8")
             .accept(MediaType.APPLICATION_JSON)
-            .param("cursorIndex", String.valueOf(cursorIndex))
-            .param("updatedAt", String.valueOf(updatedAt)));
+            .param("nextToken", nextToken));
 
         //then
         result.andExpect(status().isOk())
@@ -254,8 +262,7 @@ class FeedControllerTest {
                             "FireBase Access 토큰")
                     ),
                     requestParameters(
-                        parameterWithName("cursorIndex").description("마지막 피드 아이디, 없으면 `Null`"),
-                        parameterWithName("updatedAt").description("마지막 피드 업데이트 시간, 없으면 `Null`")
+                        parameterWithName("nextToken").description("다음 피드 요청 토큰, 없으면 `Null`")
                     ),
                     responseFields(
                         fieldWithPath("header.result").type(JsonFieldType.BOOLEAN)
@@ -264,8 +271,10 @@ class FeedControllerTest {
                             .description("메시지"),
                         fieldWithPath("header.status").type(JsonFieldType.NUMBER)
                             .description("Http 상태 코드"),
-                        fieldWithPath("body.hasNext").type(JsonFieldType.BOOLEAN)
-                            .description("다음 페이지 존재유무 `true`, `false`"),
+                        fieldWithPath("body.hasNextToken").type(JsonFieldType.STRING)
+                            .description("다음 페이지 토큰"),
+                        fieldWithPath("body.maxResults").type(JsonFieldType.NUMBER)
+                            .description("최대 페이지 갯수"),
                         fieldWithPath("body.feedInfos.[].id").type(JsonFieldType.NUMBER)
                             .description("피드 아이디"),
                         fieldWithPath("body.feedInfos.[].display_name").type(JsonFieldType.STRING)

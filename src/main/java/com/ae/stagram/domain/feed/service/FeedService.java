@@ -12,15 +12,15 @@ import com.ae.stagram.domain.user.dao.UserRepository;
 import com.ae.stagram.domain.user.domain.User;
 import com.ae.stagram.domain.user.dto.UserDto;
 import com.ae.stagram.domain.user.exception.UserNotFoundException;
+import com.ae.stagram.global.util.pageable.PageNationUtils;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -32,8 +32,7 @@ public class FeedService {
 
     private final ImageRepository imageRepository;
 
-    @Value("${app.page-size}")
-    private int pageSize;
+    private final PageNationUtils pageNationUtil;
 
     @Transactional
     public void insertFeed(FeedRequest createFeedRequest, UserDto userDto) {
@@ -92,9 +91,18 @@ public class FeedService {
             .build();
     }
 
-    public FeedResponse getMainFeeds(Long cursorIndex, LocalDateTime updatedAt) {
+    public FeedResponse getMainFeeds(String nextToken) {
+        Long cursorIndex = null;
+        LocalDateTime updatedAt = null;
 
-        List<Feed> pageFeeds = getFeedPagenation(cursorIndex, updatedAt);
+        if (StringUtils.hasText(nextToken)) {
+            String[] values = nextToken.split(PageNationUtils.splitPageInfo);
+
+            cursorIndex = Long.parseLong(values[0]);
+            updatedAt = LocalDateTime.parse(values[1]);
+        }
+
+        List<Feed> pageFeeds = pageNationUtil.getFeedPagenation(cursorIndex, updatedAt);
 
         List<FeedInfo> feedInfos = new ArrayList<>();
         for (Feed feed : pageFeeds) {
@@ -112,20 +120,19 @@ public class FeedService {
                 .build());
         }
 
+        int feedCount = feedInfos.size();
+        String token = "";
+        if (feedCount > 0) {
+            FeedInfo feedInfo = feedInfos.get(feedCount - 1);
+            token = String.format("%d%s%s", feedInfo.getId(), PageNationUtils.splitPageInfo,
+                feedInfo.getUpdatedAt());
+        }
+
         return FeedResponse.builder()
-            .hasNext(pageFeeds.size() == pageSize)
+            .hasNextToken(token)
             .feedInfos(feedInfos)
+            .maxResults(pageNationUtil.getPageSize())
             .build();
-    }
-
-    private List<Feed> getFeedPagenation(Long cursorIndex, LocalDateTime updatedTime) {
-        PageRequest pageRequest = PageRequest.of(0, pageSize);
-        List<Feed> feeds = cursorIndex == null
-                ? feedRepository.findAllByOrderByUpdatedAtDesc(pageRequest)
-                : feedRepository.findPageList(cursorIndex, updatedTime,
-                    pageRequest);
-
-        return feeds;
     }
 
     public void removeFeed(Long feedId) {

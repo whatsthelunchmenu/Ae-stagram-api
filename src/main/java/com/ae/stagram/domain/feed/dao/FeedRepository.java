@@ -12,7 +12,10 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
 
     List<Feed> findAllByOrderByUpdatedAtDesc(Pageable pageable);
 
-    @Query(value = "select fd from Feed fd left outer join fetch fd.images join fetch fd.user where (fd.updatedAt < :updatedAt or (fd.updatedAt = :updatedAt and fd.id <> :id)) order by fd.updatedAt desc, fd.id asc")
+    @Query(value = "select fd from Feed fd "
+        + "left outer join fetch fd.images join fetch fd.user "
+        + "where (fd.updatedAt < :updatedAt or (fd.updatedAt = :updatedAt and fd.id <> :id)) "
+        + "order by fd.updatedAt desc, fd.id asc")
     List<Feed> findPageList(@Param(value = "id") long id,
         @Param(value = "updatedAt") LocalDateTime updatedAt,
         Pageable pageable);

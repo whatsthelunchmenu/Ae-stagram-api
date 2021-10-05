@@ -45,10 +45,9 @@ public class FeedController {
 
     @GetMapping
     public ResponseEntity<ResponseMessage> getFeeds(
-        @RequestParam(value = "cursorIndex", required = false) Long cursorIndex,
-        @RequestParam(value = "updatedAt", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime updatedAt) {
+        @RequestParam(value = "nextToken", required = false) String nextToken) {
         return ResponseEntity.ok()
-            .body(ResponseMessage.success(feedService.getMainFeeds(cursorIndex, updatedAt)));
+            .body(ResponseMessage.success(feedService.getMainFeeds(nextToken)));
     }
 
     @DeleteMapping("{id}")
