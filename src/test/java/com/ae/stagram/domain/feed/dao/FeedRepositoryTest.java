@@ -2,7 +2,7 @@ package com.ae.stagram.domain.feed.dao;
 
 import com.ae.stagram.domain.feed.domain.Feed;
 import com.ae.stagram.domain.feed.domain.Image;
-import com.ae.stagram.domain.feed.dto.FeedRequest;
+import com.ae.stagram.domain.feed.dto.FeedRequestDto;
 import com.ae.stagram.domain.user.dao.UserRepository;
 import com.ae.stagram.domain.user.domain.User;
 import java.time.LocalDateTime;
@@ -53,7 +53,7 @@ class FeedRepositoryTest {
         LocalDateTime createdAt = LocalDateTime.now();
         LocalDateTime updatedAt = LocalDateTime.now();
 
-        FeedRequest feedRequest = FeedRequest.builder()
+        FeedRequestDto feedRequestDto = FeedRequestDto.builder()
             .content("컨텐츠 업데이트 내용")
             .images(Lists.newArrayList(
                 "http://localhost/images/test.jpg",
@@ -61,13 +61,13 @@ class FeedRepositoryTest {
             .build();
 
         Feed newFeed = Feed.builder()
-            .content(feedRequest.getContent())
+            .content(feedRequestDto.getContent())
             .user(user)
             .createdAt(createdAt)
             .updatedAt(updatedAt)
             .build();
 
-        for (String path : feedRequest.getImages()) {
+        for (String path : feedRequestDto.getImages()) {
             images.add(Image.builder()
                 .imagePath(path)
                 .createdAt(LocalDateTime.now())

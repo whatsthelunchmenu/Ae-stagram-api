@@ -21,9 +21,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.ae.stagram.domain.feed.dto.FeedInfo;
-import com.ae.stagram.domain.feed.dto.FeedRequest;
-import com.ae.stagram.domain.feed.dto.FeedResponse;
+import com.ae.stagram.domain.feed.dto.FeedInfoDto;
+import com.ae.stagram.domain.feed.dto.FeedRequestDto;
+import com.ae.stagram.domain.feed.dto.FeedResponseDto;
 import com.ae.stagram.domain.feed.service.FeedService;
 import com.ae.stagram.domain.user.dto.UserDto;
 import com.ae.stagram.global.config.interceptor.AuthInterceptor;
@@ -91,14 +91,14 @@ class FeedControllerTest {
     @Test
     public void createFeed_피드_추가() throws Exception {
 
-        FeedRequest feedRequest = FeedRequest.builder()
+        FeedRequestDto feedRequestDto = FeedRequestDto.builder()
             .content("컨텐츠 내용")
             .images(Lists.newArrayList(
                 "http://localhost/images/test.jpg",
                 "http://localhost/images/test.jpg"))
             .build();
 
-        willDoNothing().given(feedService).insertFeed(feedRequest, this.userDto);
+        willDoNothing().given(feedService).insertFeed(feedRequestDto, this.userDto);
         given(authInterceptor.preHandle(any(), any(), any()))
             .willReturn(true);
 
@@ -110,7 +110,7 @@ class FeedControllerTest {
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
             .characterEncoding("utf-8")
-            .content(objectMapper.writeValueAsString(feedRequest)));
+            .content(objectMapper.writeValueAsString(feedRequestDto)));
 
         //then
         result.andExpect(status().isOk())
@@ -140,15 +140,15 @@ class FeedControllerTest {
 
     @Test
     public void putFeed_피드_업데이트() throws Exception {
-        FeedRequest feedRequest = FeedRequest.builder()
+        FeedRequestDto feedRequestDto = FeedRequestDto.builder()
             .content("컨텐츠 업데이트 내용")
             .images(Lists.newArrayList(
                 "http://localhost/images/test.jpg",
                 "http://localhost/images/test.jpg"))
             .build();
 
-        given(feedService.updateFeed(anyLong(), any(FeedRequest.class)))
-            .willReturn(FeedInfo.builder()
+        given(feedService.updateFeed(anyLong(), any(FeedRequestDto.class)))
+            .willReturn(FeedInfoDto.builder()
                 .id(1L)
                 .content("컨텐츠 내용")
                 .display_name("홍길동")
@@ -170,7 +170,7 @@ class FeedControllerTest {
                 .accept(MediaType.APPLICATION_JSON)
                 .characterEncoding("utf-8")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(feedRequest)));
+                .content(objectMapper.writeValueAsString(feedRequestDto)));
 
         //then
         result.andExpect(status().isOk())
@@ -222,8 +222,8 @@ class FeedControllerTest {
         System.out.println(nextToken);
 
         given(feedService.getMainFeeds(nextToken)).willReturn(
-            FeedResponse.builder()
-                .feedInfos(Lists.newArrayList(FeedInfo.builder()
+            FeedResponseDto.builder()
+                .feedInfoDtos(Lists.newArrayList(FeedInfoDto.builder()
                     .id(1L)
                     .display_name("호돌맨")
                     .content("본문 내용")

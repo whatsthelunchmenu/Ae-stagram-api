@@ -6,12 +6,16 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class FeedRequest {
+@Getter
+public class FeedResponseDto {
 
-    private String content;
-    private List<String> images;
+    private String hasNextToken;
+
+    private int maxResults;
+
+    private List<FeedInfoDto> feedInfoDtos;
+
 }

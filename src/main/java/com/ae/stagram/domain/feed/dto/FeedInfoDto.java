@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-public class FeedInfo {
+public class FeedInfoDto {
 
     private Long id;
 
