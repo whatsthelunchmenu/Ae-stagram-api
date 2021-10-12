@@ -1,6 +1,6 @@
 package com.ae.stagram.domain.feed.api;
 
-import com.ae.stagram.domain.feed.dto.FeedRequest;
+import com.ae.stagram.domain.feed.dto.FeedRequestDto;
 import com.ae.stagram.domain.feed.service.FeedService;
 import com.ae.stagram.domain.user.dto.UserDto;
 import com.ae.stagram.global.common.ResponseMessage;
@@ -27,7 +27,7 @@ public class FeedController {
     private final FeedService feedService;
 
     @PostMapping
-    public ResponseEntity<ResponseMessage> createFeed(@RequestBody FeedRequest request,
+    public ResponseEntity<ResponseMessage> createFeed(@RequestBody FeedRequestDto request,
         @RequestAttribute(value = "firebaseUser") UserDto userDto) {
 
         feedService.insertFeed(request, userDto);
@@ -37,7 +37,7 @@ public class FeedController {
 
     @PatchMapping(value = "{id}")
     public ResponseEntity<ResponseMessage> putFeed(@PathVariable("id") Long id,
-        @RequestBody FeedRequest request) {
+        @RequestBody FeedRequestDto request) {
 
         return ResponseEntity.ok()
             .body(ResponseMessage.success(feedService.updateFeed(id, request)));

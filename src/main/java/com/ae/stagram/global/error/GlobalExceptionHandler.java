@@ -14,13 +14,19 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = {TokenNotFoundException.class, IllegalArgumentException.class,
         FirebaseAuthException.class})
-    public ResponseEntity<?> AuthException(RuntimeException ex) {
+    public ResponseEntity<?> authException(RuntimeException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
             .body(ResponseMessage.fail(ex.getMessage(), HttpStatus.UNAUTHORIZED));
     }
 
     @ExceptionHandler(value = UserNotFoundException.class)
-    public ResponseEntity<?> UserException(RuntimeException ex) {
+    public ResponseEntity<?> userException(RuntimeException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            .body(ResponseMessage.fail(ex.getMessage(), HttpStatus.UNAUTHORIZED));
+    }
+
+    @ExceptionHandler(value = NullPointerException.class)
+    public ResponseEntity<?> test(RuntimeException ex){
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
             .body(ResponseMessage.fail(ex.getMessage(), HttpStatus.UNAUTHORIZED));
     }

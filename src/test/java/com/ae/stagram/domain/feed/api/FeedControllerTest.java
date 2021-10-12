@@ -21,9 +21,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.ae.stagram.domain.feed.dto.FeedInfo;
-import com.ae.stagram.domain.feed.dto.FeedRequest;
-import com.ae.stagram.domain.feed.dto.FeedResponse;
+import com.ae.stagram.domain.feed.dto.FeedInfoDto;
+import com.ae.stagram.domain.feed.dto.FeedRequestDto;
+import com.ae.stagram.domain.feed.dto.FeedResponseDto;
 import com.ae.stagram.domain.feed.service.FeedService;
 import com.ae.stagram.domain.user.dto.UserDto;
 import com.ae.stagram.global.config.interceptor.AuthInterceptor;
@@ -91,14 +91,14 @@ class FeedControllerTest {
     @Test
     public void createFeed_피드_추가() throws Exception {
 
-        FeedRequest feedRequest = FeedRequest.builder()
+        FeedRequestDto feedRequestDto = FeedRequestDto.builder()
             .content("컨텐츠 내용")
             .images(Lists.newArrayList(
                 "http://localhost/images/test.jpg",
                 "http://localhost/images/test.jpg"))
             .build();
 
-        willDoNothing().given(feedService).insertFeed(feedRequest, this.userDto);
+        willDoNothing().given(feedService).insertFeed(feedRequestDto, this.userDto);
         given(authInterceptor.preHandle(any(), any(), any()))
             .willReturn(true);
 
@@ -110,7 +110,7 @@ class FeedControllerTest {
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
             .characterEncoding("utf-8")
-            .content(objectMapper.writeValueAsString(feedRequest)));
+            .content(objectMapper.writeValueAsString(feedRequestDto)));
 
         //then
         result.andExpect(status().isOk())
@@ -140,15 +140,15 @@ class FeedControllerTest {
 
     @Test
     public void putFeed_피드_업데이트() throws Exception {
-        FeedRequest feedRequest = FeedRequest.builder()
+        FeedRequestDto feedRequestDto = FeedRequestDto.builder()
             .content("컨텐츠 업데이트 내용")
             .images(Lists.newArrayList(
                 "http://localhost/images/test.jpg",
                 "http://localhost/images/test.jpg"))
             .build();
 
-        given(feedService.updateFeed(anyLong(), any(FeedRequest.class)))
-            .willReturn(FeedInfo.builder()
+        given(feedService.updateFeed(anyLong(), any(FeedRequestDto.class)))
+            .willReturn(FeedInfoDto.builder()
                 .id(1L)
                 .content("컨텐츠 내용")
                 .display_name("홍길동")
@@ -170,7 +170,7 @@ class FeedControllerTest {
                 .accept(MediaType.APPLICATION_JSON)
                 .characterEncoding("utf-8")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(feedRequest)));
+                .content(objectMapper.writeValueAsString(feedRequestDto)));
 
         //then
         result.andExpect(status().isOk())
@@ -222,8 +222,8 @@ class FeedControllerTest {
         System.out.println(nextToken);
 
         given(feedService.getMainFeeds(nextToken)).willReturn(
-            FeedResponse.builder()
-                .feedInfos(Lists.newArrayList(FeedInfo.builder()
+            FeedResponseDto.builder()
+                .feedInfoDtos(Lists.newArrayList(FeedInfoDto.builder()
                     .id(1L)
                     .display_name("호돌맨")
                     .content("본문 내용")
@@ -262,7 +262,7 @@ class FeedControllerTest {
                             "FireBase Access 토큰")
                     ),
                     requestParameters(
-                        parameterWithName("nextToken").description("다음 피드 요청 토큰, 없으면 `Null`")
+                        parameterWithName("nextToken").description("다음 피드 요청 토큰").optional()
                     ),
                     responseFields(
                         fieldWithPath("header.result").type(JsonFieldType.BOOLEAN)
@@ -275,17 +275,17 @@ class FeedControllerTest {
                             .description("다음 페이지 토큰"),
                         fieldWithPath("body.maxResults").type(JsonFieldType.NUMBER)
                             .description("최대 페이지 갯수"),
-                        fieldWithPath("body.feedInfos.[].id").type(JsonFieldType.NUMBER)
+                        fieldWithPath("body.feedInfoDtos.[].id").type(JsonFieldType.NUMBER)
                             .description("피드 아이디"),
-                        fieldWithPath("body.feedInfos.[].display_name").type(JsonFieldType.STRING)
+                        fieldWithPath("body.feedInfoDtos.[].display_name").type(JsonFieldType.STRING)
                             .description("유저 이름"),
-                        fieldWithPath("body.feedInfos.[].content").type(JsonFieldType.STRING)
+                        fieldWithPath("body.feedInfoDtos.[].content").type(JsonFieldType.STRING)
                             .description("피드 본문 내용"),
-                        fieldWithPath("body.feedInfos.[].images").type(JsonFieldType.ARRAY)
+                        fieldWithPath("body.feedInfoDtos.[].images").type(JsonFieldType.ARRAY)
                             .description("해당 피드의 이미지 목록"),
-                        fieldWithPath("body.feedInfos.[].createdAt").type(JsonFieldType.STRING)
+                        fieldWithPath("body.feedInfoDtos.[].createdAt").type(JsonFieldType.STRING)
                             .description("피드 생성 시간"),
-                        fieldWithPath("body.feedInfos.[].updatedAt").type(JsonFieldType.STRING)
+                        fieldWithPath("body.feedInfoDtos.[].updatedAt").type(JsonFieldType.STRING)
                             .description("피드 수정 시간")
                     )
                 )

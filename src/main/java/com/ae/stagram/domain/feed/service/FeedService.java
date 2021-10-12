@@ -4,9 +4,9 @@ import com.ae.stagram.domain.feed.dao.FeedRepository;
 import com.ae.stagram.domain.feed.dao.ImageRepository;
 import com.ae.stagram.domain.feed.domain.Feed;
 import com.ae.stagram.domain.feed.domain.Image;
-import com.ae.stagram.domain.feed.dto.FeedInfo;
-import com.ae.stagram.domain.feed.dto.FeedRequest;
-import com.ae.stagram.domain.feed.dto.FeedResponse;
+import com.ae.stagram.domain.feed.dto.FeedInfoDto;
+import com.ae.stagram.domain.feed.dto.FeedRequestDto;
+import com.ae.stagram.domain.feed.dto.FeedResponseDto;
 import com.ae.stagram.domain.feed.exception.FeedNotFoundException;
 import com.ae.stagram.domain.user.dao.UserRepository;
 import com.ae.stagram.domain.user.domain.User;
@@ -35,7 +35,7 @@ public class FeedService {
     private final PageNationUtils pageNationUtil;
 
     @Transactional
-    public void insertFeed(FeedRequest createFeedRequest, UserDto userDto) {
+    public void insertFeed(FeedRequestDto createFeedRequestDto, UserDto userDto) {
 
         User user = userRepository.findByUuid(userDto.getUuid())
             .orElseThrow(() -> new UserNotFoundException("등록되지 않은 사용자입니다."));
@@ -44,13 +44,13 @@ public class FeedService {
         LocalDateTime updatedAt = LocalDateTime.now();
 
         Feed newFeed = Feed.builder()
-            .content(createFeedRequest.getContent())
+            .content(createFeedRequestDto.getContent())
             .user(user)
             .createdAt(createdAt)
             .updatedAt(updatedAt)
             .build();
 
-        List<Image> feedImages = getFeedImages(createFeedRequest.getImages(), newFeed);
+        List<Image> feedImages = getFeedImages(createFeedRequestDto.getImages(), newFeed);
         newFeed.setImages(feedImages);
 
         feedRepository.save(newFeed);
@@ -58,19 +58,19 @@ public class FeedService {
     }
 
     @Transactional
-    public FeedInfo updateFeed(Long feedId, FeedRequest feedRequest) {
+    public FeedInfoDto updateFeed(Long feedId, FeedRequestDto feedRequestDto) {
         Feed feed = feedRepository.findById(feedId)
             .orElseThrow(() -> new FeedNotFoundException("존재하지 않는 피드입니다."));
 
-        if (feedRequest.getContent() != null && feedRequest.getContent().isEmpty() == false) {
-            feed.setContent(feedRequest.getContent());
+        if (feedRequestDto.getContent() != null && feedRequestDto.getContent().isEmpty() == false) {
+            feed.setContent(feedRequestDto.getContent());
         }
 
-        if (feedRequest.getImages() != null && feedRequest.getImages().isEmpty() == false) {
+        if (feedRequestDto.getImages() != null && feedRequestDto.getImages().isEmpty() == false) {
             List<Long> imageIds = feed.getImages().stream().map(image -> image.getId())
                 .collect(Collectors.toList());
             imageRepository.deleteAllById(imageIds);
-            List<Image> feedImages = getFeedImages(feedRequest.getImages(), feed);
+            List<Image> feedImages = getFeedImages(feedRequestDto.getImages(), feed);
             feed.setImages(feedImages);
             imageRepository.saveAll(feedImages);
         }
@@ -81,7 +81,7 @@ public class FeedService {
             .map(image -> image.getImagePath())
             .collect(Collectors.toList());
 
-        return FeedInfo.builder()
+        return FeedInfoDto.builder()
             .id(savedFeed.getId())
             .content(savedFeed.getContent())
             .display_name(savedFeed.getContent())
@@ -91,7 +91,7 @@ public class FeedService {
             .build();
     }
 
-    public FeedResponse getMainFeeds(String nextToken) {
+    public FeedResponseDto getMainFeeds(String nextToken) {
         Long cursorIndex = null;
         LocalDateTime updatedAt = null;
 
@@ -104,13 +104,13 @@ public class FeedService {
 
         List<Feed> pageFeeds = pageNationUtil.getFeedPagenation(cursorIndex, updatedAt);
 
-        List<FeedInfo> feedInfos = new ArrayList<>();
+        List<FeedInfoDto> feedInfoDtos = new ArrayList<>();
         for (Feed feed : pageFeeds) {
             List<String> imagePaths = feed.getImages().stream()
                 .map(image -> image.getImagePath())
                 .collect(Collectors.toList());
 
-            feedInfos.add(FeedInfo.builder()
+            feedInfoDtos.add(FeedInfoDto.builder()
                 .id(feed.getId())
                 .display_name(feed.getUser().getDisplayName())
                 .content(feed.getContent())
@@ -120,17 +120,17 @@ public class FeedService {
                 .build());
         }
 
-        int feedCount = feedInfos.size();
+        int feedCount = feedInfoDtos.size();
         String token = "";
         if (feedCount > 0) {
-            FeedInfo feedInfo = feedInfos.get(feedCount - 1);
-            token = String.format("%d%s%s", feedInfo.getId(), PageNationUtils.splitPageInfo,
-                feedInfo.getUpdatedAt());
+            FeedInfoDto feedInfoDto = feedInfoDtos.get(feedCount - 1);
+            token = String.format("%d%s%s", feedInfoDto.getId(), PageNationUtils.splitPageInfo,
+                feedInfoDto.getUpdatedAt());
         }
 
-        return FeedResponse.builder()
+        return FeedResponseDto.builder()
             .hasNextToken(token)
-            .feedInfos(feedInfos)
+            .feedInfoDtos(feedInfoDtos)
             .maxResults(pageNationUtil.getPageSize())
             .build();
     }
