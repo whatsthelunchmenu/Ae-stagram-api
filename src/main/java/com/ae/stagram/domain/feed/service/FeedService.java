@@ -122,16 +122,20 @@ public class FeedService {
 
         int feedCount = feedInfoDtos.size();
         String token = "";
-        if (feedCount > 0) {
-            FeedInfoDto feedInfoDto = feedInfoDtos.get(feedCount - 1);
+        int pageMaxSize = pageNationUtil.getPageMaxSize();
+        if (feedCount > pageMaxSize) {
+            // 읽지않은 데이터가 존재하는지 파악하기위해 pageSize보다 1개 더 읽은부분 제거
+            feedInfoDtos.remove(feedCount - 1);
+
+            FeedInfoDto feedInfoDto = feedInfoDtos.get(pageMaxSize - 1);
             token = String.format("%d%s%s", feedInfoDto.getId(), PageNationUtils.splitPageInfo,
                 feedInfoDto.getUpdatedAt());
         }
 
         return FeedResponseDto.builder()
             .hasNextToken(token)
-            .feedInfoDtos(feedInfoDtos)
-            .maxResults(pageNationUtil.getPageSize())
+            .feedInfos(feedInfoDtos)
+            .maxResults(pageNationUtil.getPageMaxSize())
             .build();
     }
 

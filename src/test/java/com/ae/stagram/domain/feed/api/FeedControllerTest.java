@@ -223,7 +223,7 @@ class FeedControllerTest {
 
         given(feedService.getMainFeeds(nextToken)).willReturn(
             FeedResponseDto.builder()
-                .feedInfoDtos(Lists.newArrayList(FeedInfoDto.builder()
+                .feedInfos(Lists.newArrayList(FeedInfoDto.builder()
                     .id(1L)
                     .display_name("호돌맨")
                     .content("본문 내용")
@@ -275,17 +275,17 @@ class FeedControllerTest {
                             .description("다음 페이지 토큰"),
                         fieldWithPath("body.maxResults").type(JsonFieldType.NUMBER)
                             .description("최대 페이지 갯수"),
-                        fieldWithPath("body.feedInfoDtos.[].id").type(JsonFieldType.NUMBER)
+                        fieldWithPath("body.feedInfos.[].id").type(JsonFieldType.NUMBER)
                             .description("피드 아이디"),
-                        fieldWithPath("body.feedInfoDtos.[].display_name").type(JsonFieldType.STRING)
+                        fieldWithPath("body.feedInfos.[].display_name").type(JsonFieldType.STRING)
                             .description("유저 이름"),
-                        fieldWithPath("body.feedInfoDtos.[].content").type(JsonFieldType.STRING)
+                        fieldWithPath("body.feedInfos.[].content").type(JsonFieldType.STRING)
                             .description("피드 본문 내용"),
-                        fieldWithPath("body.feedInfoDtos.[].images").type(JsonFieldType.ARRAY)
+                        fieldWithPath("body.feedInfos.[].images").type(JsonFieldType.ARRAY)
                             .description("해당 피드의 이미지 목록"),
-                        fieldWithPath("body.feedInfoDtos.[].createdAt").type(JsonFieldType.STRING)
+                        fieldWithPath("body.feedInfos.[].createdAt").type(JsonFieldType.STRING)
                             .description("피드 생성 시간"),
-                        fieldWithPath("body.feedInfoDtos.[].updatedAt").type(JsonFieldType.STRING)
+                        fieldWithPath("body.feedInfos.[].updatedAt").type(JsonFieldType.STRING)
                             .description("피드 수정 시간")
                     )
                 )

@@ -20,8 +20,11 @@ public class PageNationUtils {
     @Value("${app.page-size}")
     private int pageSize;
 
+    // DB에서 pageSize보다 1개더 가져와 nextToken을 계산하기위해 사용한다.
+    private final int dummy = 1;
+
     public List<Feed> getFeedPagenation(Long cursorIndex, LocalDateTime updatedTime) {
-        PageRequest pageRequest = PageRequest.of(0, pageSize);
+        PageRequest pageRequest = PageRequest.of(0, pageSize + dummy);
         List<Feed> feeds = cursorIndex == null
             ? feedRepository.findAllByOrderByUpdatedAtDesc(pageRequest)
             : feedRepository.findPageList(cursorIndex, updatedTime, pageRequest);
@@ -29,7 +32,7 @@ public class PageNationUtils {
         return feeds;
     }
 
-    public int getPageSize(){
+    public int getPageMaxSize(){
         return pageSize;
     }
 }

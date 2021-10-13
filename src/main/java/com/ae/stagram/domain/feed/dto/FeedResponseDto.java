@@ -16,6 +16,6 @@ public class FeedResponseDto {
 
     private int maxResults;
 
-    private List<FeedInfoDto> feedInfoDtos;
+    private List<FeedInfoDto> feedInfos;
 
 }
