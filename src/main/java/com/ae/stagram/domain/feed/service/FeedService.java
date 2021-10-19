@@ -13,6 +13,9 @@ import com.ae.stagram.domain.user.domain.User;
 import com.ae.stagram.domain.user.dto.UserDto;
 import com.ae.stagram.domain.user.exception.UserNotFoundException;
 import com.ae.stagram.global.util.pageable.PageNationUtils;
+import com.ae.stagram.global.util.s3.S3UploaderUtils;
+import com.ae.stagram.global.util.s3.dto.FileUploadDto;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -34,8 +38,13 @@ public class FeedService {
 
     private final PageNationUtils pageNationUtil;
 
+    private final S3UploaderUtils s3UploaderUtils;
+
+    private final String imageDir = "static";
+
     @Transactional
-    public void insertFeed(FeedRequestDto createFeedRequestDto, UserDto userDto) {
+    public void insertFeed(FeedRequestDto createFeedRequestDto, UserDto userDto)
+        throws IOException {
 
         User user = userRepository.findByUuid(userDto.getUuid())
             .orElseThrow(() -> new UserNotFoundException("등록되지 않은 사용자입니다."));
@@ -58,37 +67,35 @@ public class FeedService {
     }
 
     @Transactional
-    public FeedInfoDto updateFeed(Long feedId, FeedRequestDto feedRequestDto) {
+    public FeedInfoDto updateFeed(Long feedId, FeedRequestDto feedRequestDto) throws IOException {
         Feed feed = feedRepository.findById(feedId)
             .orElseThrow(() -> new FeedNotFoundException("존재하지 않는 피드입니다."));
 
-        if (feedRequestDto.getContent() != null && feedRequestDto.getContent().isEmpty() == false) {
-            feed.setContent(feedRequestDto.getContent());
+        if (!feedRequestDto.getImages().isEmpty()) {
+            for (Image image : feed.getImages()) {
+                s3UploaderUtils.delete(image.getImagePath());
+            }
         }
 
-        if (feedRequestDto.getImages() != null && feedRequestDto.getImages().isEmpty() == false) {
-            List<Long> imageIds = feed.getImages().stream().map(image -> image.getId())
-                .collect(Collectors.toList());
-            imageRepository.deleteAllById(imageIds);
-            List<Image> feedImages = getFeedImages(feedRequestDto.getImages(), feed);
-            feed.setImages(feedImages);
-            imageRepository.saveAll(feedImages);
-        }
-
-        feed.setUpdatedAt(LocalDateTime.now());
-        Feed savedFeed = feedRepository.save(feed);
-        List<String> imagePaths = savedFeed.getImages().stream()
-            .map(image -> image.getImagePath())
+        List<Long> imageIds = feed.getImages().stream()
+            .map(it -> it.getId())
             .collect(Collectors.toList());
+        imageRepository.deleteAllById(imageIds);
 
-        return FeedInfoDto.builder()
-            .id(savedFeed.getId())
-            .content(savedFeed.getContent())
-            .display_name(savedFeed.getContent())
-            .images(imagePaths)
-            .createdAt(savedFeed.getCreatedAt())
-            .updatedAt(savedFeed.getUpdatedAt())
-            .build();
+        List<FileUploadDto> imageConvertInfo = getImageConvertInfo(feedRequestDto.getImages());
+        List<Image> images = new ArrayList<>();
+        for (FileUploadDto fileInfo : imageConvertInfo) {
+            images.add(Image.builder()
+                .imagePath(fileInfo.getFileFullPath())
+                .imageUrl(fileInfo.getFileUrl())
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .feed(feed)
+                .build());
+        }
+        imageRepository.saveAll(images);
+
+        return feed.update(feedRequestDto.getContent(), images);
     }
 
     public FeedResponseDto getMainFeeds(String nextToken) {
@@ -143,14 +150,27 @@ public class FeedService {
         feedRepository.deleteById(feedId);
     }
 
-    private List<Image> getFeedImages(List<String> imagePaths, Feed feed) {
+    private List<FileUploadDto> getImageConvertInfo(List<MultipartFile> multipartFiles)
+        throws IOException {
+        List<FileUploadDto> fileUploadDtos = new ArrayList<>();
+
+        for (MultipartFile file : multipartFiles) {
+            fileUploadDtos.add(s3UploaderUtils.upload(file, imageDir));
+        }
+        return fileUploadDtos;
+    }
+
+    private List<Image> getFeedImages(List<MultipartFile> multipartFiles, Feed feed)
+        throws IOException {
         List<Image> paths = new ArrayList<>();
         LocalDateTime createdAt = LocalDateTime.now();
         LocalDateTime updatedAt = LocalDateTime.now();
 
-        for (String path : imagePaths) {
+        for (MultipartFile file : multipartFiles) {
+            FileUploadDto uploadDto = s3UploaderUtils.upload(file, imageDir);
             paths.add(Image.builder()
-                .imagePath(path)
+                .imagePath(uploadDto.getFileFullPath())
+                .imageUrl(uploadDto.getFileUrl())
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
                 .feed(feed)

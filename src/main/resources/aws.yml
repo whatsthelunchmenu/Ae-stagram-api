@@ -1,0 +1,13 @@
+
+cloud:
+  aws:
+    credentials:
+      instance-profile: false
+      access-key: AKIA4CFIWQMXP2JUK4U3
+      secret-key: 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
+    s3:
+      bucket: aestagram
+    region:
+      static: ap-northeast-2
+    stack:
+      auto: false

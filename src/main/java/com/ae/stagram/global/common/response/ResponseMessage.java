@@ -1,4 +1,4 @@
-package com.ae.stagram.global.common;
+package com.ae.stagram.global.common.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,8 +1,7 @@
 package com.ae.stagram.global.error;
 
 import com.ae.stagram.domain.user.exception.UserNotFoundException;
-import com.ae.stagram.global.common.ResponseMessage;
-import com.ae.stagram.global.common.ResponseMessageHeader;
+import com.ae.stagram.global.common.response.ResponseMessage;
 import com.google.firebase.auth.FirebaseAuthException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

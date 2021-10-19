@@ -25,6 +25,7 @@ create table Image(
 	  ID int(10) not null auto_increment,
     FEED_ID int(10) not null,
     IMAGE_PATH varchar(255),
+    IMAGE_URL varchar(255),
     CREATED_AT datetime not null,
     UPDATED_AT datetime not null,
     primary key (ID),

@@ -41,6 +41,8 @@ dependencies {
     // Valid 애노테이션 사용을 위한 의존성 추가
     implementation group: 'javax.validation', name: 'validation-api'
 
+    //AWS S3 의존성 추가
+    implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-aws', version: '2.2.1.RELEASE'
 
     implementation group: 'org.springframework.restdocs', name: 'spring-restdocs-core'
 }

@@ -2,7 +2,7 @@ package com.ae.stagram.domain.user.api;
 
 import com.ae.stagram.domain.user.dto.UserDto;
 import com.ae.stagram.domain.user.service.UserService;
-import com.ae.stagram.global.common.ResponseMessage;
+import com.ae.stagram.global.common.response.ResponseMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
