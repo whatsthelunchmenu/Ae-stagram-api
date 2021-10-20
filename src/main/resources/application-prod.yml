@@ -18,6 +18,11 @@ spring:
         # sql문을 가독성 있게 출력
         format_sql: true
 
+  servlet:
+    multipart:
+      maxFileSize: 10MB
+      maxRequestSize: 10MB
+
 logging:
   level:
     org.hibernate: info
