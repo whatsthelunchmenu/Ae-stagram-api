@@ -14,7 +14,6 @@ import com.ae.stagram.domain.user.dto.UserDto;
 import com.ae.stagram.domain.user.exception.UserNotFoundException;
 import com.ae.stagram.global.util.pageable.PageNationUtils;
 import com.ae.stagram.global.util.s3.S3UploaderUtils;
-import com.ae.stagram.global.util.s3.dto.FileUploadDto;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -49,20 +48,13 @@ public class FeedService {
         User user = userRepository.findByUuid(userDto.getUuid())
             .orElseThrow(() -> new UserNotFoundException("등록되지 않은 사용자입니다."));
 
-        LocalDateTime createdAt = LocalDateTime.now();
-        LocalDateTime updatedAt = LocalDateTime.now();
+        List<Image> feedImages = new ArrayList<>();
 
-        Feed newFeed = Feed.builder()
-            .content(createFeedRequestDto.getContent())
-            .user(user)
-            .createdAt(createdAt)
-            .updatedAt(updatedAt)
-            .build();
+        Feed feed = createFeedRequestDto.toEntity(user, feedImages);
+        feedImages = saveToImageStorage(createFeedRequestDto.getImages(), feed);
+        feed.setImages(feedImages);
 
-        List<Image> feedImages = getFeedImages(createFeedRequestDto.getImages(), newFeed);
-        newFeed.setImages(feedImages);
-
-        feedRepository.save(newFeed);
+        feedRepository.save(feed);
         imageRepository.saveAll(feedImages);
     }
 
@@ -71,10 +63,8 @@ public class FeedService {
         Feed feed = feedRepository.findById(feedId)
             .orElseThrow(() -> new FeedNotFoundException("존재하지 않는 피드입니다."));
 
-        if (!feedRequestDto.getImages().isEmpty()) {
-            for (Image image : feed.getImages()) {
-                s3UploaderUtils.delete(image.getImagePath());
-            }
+        for (Image image : feed.getImages()) {
+            s3UploaderUtils.delete(image.getImagePath());
         }
 
         List<Long> imageIds = feed.getImages().stream()
@@ -82,20 +72,11 @@ public class FeedService {
             .collect(Collectors.toList());
         imageRepository.deleteAllById(imageIds);
 
-        List<FileUploadDto> imageConvertInfo = getImageConvertInfo(feedRequestDto.getImages());
-        List<Image> images = new ArrayList<>();
-        for (FileUploadDto fileInfo : imageConvertInfo) {
-            images.add(Image.builder()
-                .imagePath(fileInfo.getFileFullPath())
-                .imageUrl(fileInfo.getFileUrl())
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .feed(feed)
-                .build());
-        }
-        imageRepository.saveAll(images);
+        List<Image> feedImages = saveToImageStorage(feedRequestDto.getImages(), feed);
 
-        return feed.update(feedRequestDto.getContent(), images);
+        imageRepository.saveAll(feedImages);
+
+        return feed.update(feedRequestDto.getContent(), feedImages);
     }
 
     public FeedResponseDto getMainFeeds(String nextToken) {
@@ -109,29 +90,15 @@ public class FeedService {
             updatedAt = LocalDateTime.parse(values[1]);
         }
 
-        List<Feed> pageFeeds = pageNationUtil.getFeedPagenation(cursorIndex, updatedAt);
-
-        List<FeedInfoDto> feedInfoDtos = new ArrayList<>();
-        for (Feed feed : pageFeeds) {
-            List<String> imagePaths = feed.getImages().stream()
-                .map(image -> image.getImagePath())
-                .collect(Collectors.toList());
-
-            feedInfoDtos.add(FeedInfoDto.builder()
-                .id(feed.getId())
-                .display_name(feed.getUser().getDisplayName())
-                .content(feed.getContent())
-                .images(imagePaths)
-                .createdAt(feed.getCreatedAt())
-                .updatedAt(feed.getUpdatedAt())
-                .build());
-        }
+        List<FeedInfoDto> feedInfoDtos = pageNationUtil.getFeedPagenation(cursorIndex, updatedAt)
+            .stream().map(FeedInfoDto::new)
+            .collect(Collectors.toList());
 
         int feedCount = feedInfoDtos.size();
         String token = "";
         int pageMaxSize = pageNationUtil.getPageMaxSize();
         if (feedCount > pageMaxSize) {
-            // 읽지않은 데이터가 존재하는지 파악하기위해 pageSize보다 1개 더 읽은부분 제거
+            // 이후 데이터가 존재하는지 파악하기위해 pageSize보다 1개 더 읽은부분 제거
             feedInfoDtos.remove(feedCount - 1);
 
             FeedInfoDto feedInfoDto = feedInfoDtos.get(pageMaxSize - 1);
@@ -146,36 +113,28 @@ public class FeedService {
             .build();
     }
 
+    @Transactional
     public void removeFeed(Long feedId) {
+        Feed feed = feedRepository.findById(feedId)
+            .orElseThrow(
+                () -> new IllegalArgumentException("해당 피드가 존재하지 않습니다. feedId = " + feedId));
+
+        List<String> imagePaths = feed.getImages().stream().map(image -> image.getImagePath())
+            .collect(Collectors.toList());
+        for (String path : imagePaths) {
+            s3UploaderUtils.delete(path);
+        }
+
         feedRepository.deleteById(feedId);
     }
 
-    private List<FileUploadDto> getImageConvertInfo(List<MultipartFile> multipartFiles)
+    private List<Image> saveToImageStorage(List<MultipartFile> multipartFiles, Feed feed)
         throws IOException {
-        List<FileUploadDto> fileUploadDtos = new ArrayList<>();
 
+        List<Image> images = new ArrayList<>();
         for (MultipartFile file : multipartFiles) {
-            fileUploadDtos.add(s3UploaderUtils.upload(file, imageDir));
+            images.add(s3UploaderUtils.upload(file, imageDir).toEntity(feed));
         }
-        return fileUploadDtos;
-    }
-
-    private List<Image> getFeedImages(List<MultipartFile> multipartFiles, Feed feed)
-        throws IOException {
-        List<Image> paths = new ArrayList<>();
-        LocalDateTime createdAt = LocalDateTime.now();
-        LocalDateTime updatedAt = LocalDateTime.now();
-
-        for (MultipartFile file : multipartFiles) {
-            FileUploadDto uploadDto = s3UploaderUtils.upload(file, imageDir);
-            paths.add(Image.builder()
-                .imagePath(uploadDto.getFileFullPath())
-                .imageUrl(uploadDto.getFileUrl())
-                .createdAt(createdAt)
-                .updatedAt(updatedAt)
-                .feed(feed)
-                .build());
-        }
-        return paths;
+        return images;
     }
 }

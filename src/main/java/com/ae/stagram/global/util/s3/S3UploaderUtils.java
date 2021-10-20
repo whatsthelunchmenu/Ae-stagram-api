@@ -1,12 +1,14 @@
 package com.ae.stagram.global.util.s3;
 
-import com.ae.stagram.global.util.s3.dto.FileUploadDto;
+import com.ae.stagram.domain.feed.domain.Image;
+import com.ae.stagram.domain.feed.dto.FileUploadDto;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 @Component
 public class S3UploaderUtils {
+
     private final AmazonS3Client amazonS3Client;
 
     @Value("${cloud.aws.s3.bucket}")
@@ -30,7 +33,7 @@ public class S3UploaderUtils {
         return upload(uploadFile, dirName);
     }
 
-    public void delete(String filePath){
+    public void delete(String filePath) {
         amazonS3Client.deleteObject(bucket, filePath);
     }
 
