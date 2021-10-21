@@ -1,23 +1,22 @@
 package com.ae.stagram.domain.user.dao;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import com.ae.stagram.domain.user.domain.User;
 import java.time.LocalDateTime;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
-class UserRepositoryTest {
+public class UserRepositoryTest {
 
     @Autowired
     private UserRepository userRepository;
 
     @Test
     @Transactional
-    public void 사용자_추가_테스트(){
+    public void 사용자_추가_테스트() {
         User user = User.builder()
             .uuid("123456")
             .email("test@naver.com")
@@ -26,6 +25,7 @@ class UserRepositoryTest {
             .updatedAt(LocalDateTime.now())
             .build();
 
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
+        Assertions.assertThat(user.getUuid()).isEqualTo(savedUser.getUuid());
     }
 }
