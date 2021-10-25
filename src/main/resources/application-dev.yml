@@ -1,9 +1,8 @@
 spring:
   profiles:
-    include: aws, db
+    include: aws, db, firebase
 
   jpa:
-    database: mysql
     database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
     hibernate:
       ddl-auto: none
@@ -21,10 +20,6 @@ spring:
 logging:
   level:
     org.hibernate: info
-
-firebase:
-  sdk:
-    path: ${FIREBASE_SDK_PATH}
 
 app:
   page-size: 10
