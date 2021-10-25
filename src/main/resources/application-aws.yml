@@ -1,0 +1,10 @@
+cloud:
+  aws:
+    s3:
+      bucket: aestagram
+    region:
+      static: ap-northeast-2
+    stack:
+      auto: false # 설정한 CloudFormation이 없으므로 false 설정
+    credentials:
+      instance-profile: true # AWS 의 instanceProfile을 사용하겠다는 의미
