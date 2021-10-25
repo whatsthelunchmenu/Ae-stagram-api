@@ -1,23 +1,29 @@
 spring:
 
+  h2:
+    console:
+      enabled: true
+
   profiles:
-    include: aws
-  # mysql 사용 설정
+    include: aws, db
+
   jpa:
-    database: mysql
-    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+    # joincolumn 사용으로 인한 설정값 추가
+    hibernate:
+      ddl-auto: update
+    generate-ddl: true
+
+    # 하이버네이트가 실행한 모든 sql문을 콘솔로 출력
+    show-sql: true
     properties:
       hibernate:
-        # 하이버네이트가 실행한 모든 sql문을 콘솔로 출력
-        show_sql: true
-        # sql문을 가독성 있게 출력
-        format_sql: true
+        dialect: org.hibernate.dialect.MySQL57Dialect
+        storage_engine: innodb
 
   datasource:
-    url: jdbc:mysql://localhost:3306/Ae_stagram?useSSL=false&characterEncoding=UTF-8&serverTimezone=UTC
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    username: dev
-    password: asdf1234!
+    hikari:
+      jdbc-url: jdbc:h2:mem:testdb;MODE=MYSQL
+      username: sa
 
   servlet:
     multipart:

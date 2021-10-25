@@ -3,14 +3,17 @@ spring:
     include: aws, db, firebase
 
   jpa:
-    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL57Dialect
+        storage_engine: innodb
+      # 하이버네이트가 실행한 모든 sql문을 콘솔로 출력
+      show_sql: true
+      # sql문을 가독성 있게 출력
+      format_sql: true
     hibernate:
       ddl-auto: none
-    properties:
-        # 하이버네이트가 실행한 모든 sql문을 콘솔로 출력
-        show_sql: true
-        # sql문을 가독성 있게 출력
-        format_sql: true
+
 
   servlet:
     multipart:
