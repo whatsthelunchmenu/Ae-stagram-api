@@ -1,0 +1,55 @@
+
+spring:
+
+  h2:
+    console:
+      enabled: true
+
+  jpa:
+    # joincolumn 사용으로 인한 설정값 추가
+    hibernate:
+      ddl-auto: update
+    generate-ddl: true
+
+    # 하이버네이트가 실행한 모든 sql문을 콘솔로 출력
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL57Dialect
+        storage_engine: innodb
+
+  datasource:
+    hikari:
+      jdbc-url: jdbc:h2:mem:testdb;MODE=MYSQL
+      username: sa
+
+  servlet:
+    multipart:
+      maxFileSize: 10MB
+      maxRequestSize: 10MB
+
+logging:
+  level:
+    org.hibernate: info
+
+app:
+  page-size: 10
+
+firebase:
+  sdk:
+    path: firebase-accesskey.json
+
+cloud:
+  aws:
+    credentials:
+      instance-profile: false
+    #      access-key: access-key
+    #      secret-key: secret-key
+    s3:
+      bucket: aestagram
+    region:
+      static: ap-northeast-2
+    stack:
+      auto: false
+
+
