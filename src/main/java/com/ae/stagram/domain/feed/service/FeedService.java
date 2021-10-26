@@ -132,8 +132,11 @@ public class FeedService {
         throws IOException {
 
         List<Image> images = new ArrayList<>();
+
         for (MultipartFile file : multipartFiles) {
-            images.add(s3UploaderUtils.upload(file, imageDir).toEntity(feed));
+            if (!file.isEmpty()){
+                images.add(s3UploaderUtils.upload(file, imageDir).toEntity(feed));
+            }
         }
         return images;
     }
