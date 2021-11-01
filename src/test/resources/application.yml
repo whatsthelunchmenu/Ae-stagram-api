@@ -1,11 +1,9 @@
+
 spring:
 
   h2:
     console:
       enabled: true
-
-  profiles:
-    include: aws, db
 
   jpa:
     # joincolumn 사용으로 인한 설정값 추가
@@ -40,3 +38,18 @@ app:
 firebase:
   sdk:
     path: firebase-accesskey.json
+
+cloud:
+  aws:
+    credentials:
+      instance-profile: true
+    #      access-key: access-key
+    #      secret-key: secret-key
+    s3:
+      bucket: aestagram
+    region:
+      static: ap-northeast-2
+    stack:
+      auto: false
+
+

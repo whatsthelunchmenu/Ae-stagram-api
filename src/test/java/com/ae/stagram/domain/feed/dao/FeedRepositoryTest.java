@@ -6,16 +6,19 @@ import com.ae.stagram.domain.feed.dto.FeedRequestDto;
 import com.ae.stagram.domain.user.dao.UserRepository;
 import com.ae.stagram.domain.user.domain.User;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
+import org.assertj.core.api.Assertions;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.transaction.annotation.Transactional;
 
+@Transactional
 @SpringBootTest
-class FeedRepositoryTest {
+public class FeedRepositoryTest {
 
     @Autowired
     private FeedRepository feedRepository;
@@ -26,9 +29,14 @@ class FeedRepositoryTest {
     @Autowired
     private ImageRepository imageRepository;
 
+    private MockMultipartFile mockMultipartFile;
+
     @BeforeEach
     void init() {
         createUser();
+
+        mockMultipartFile = new MockMultipartFile("images", "imagefile.png",
+            "image/png", "<<png data>>".getBytes());
     }
 
     private void createUser() {
@@ -49,15 +57,12 @@ class FeedRepositoryTest {
         User user = userRepository.findByUuid("123456")
             .orElseThrow(RuntimeException::new);
 
-        List<Image> images = new ArrayList<>();
         LocalDateTime createdAt = LocalDateTime.now();
         LocalDateTime updatedAt = LocalDateTime.now();
 
         FeedRequestDto feedRequestDto = FeedRequestDto.builder()
             .content("컨텐츠 업데이트 내용")
-            .images(Lists.newArrayList(
-                "http://localhost/images/test.jpg",
-                "http://localhost/images/test.jpg"))
+            .images(Lists.newArrayList(mockMultipartFile))
             .build();
 
         Feed newFeed = Feed.builder()
@@ -67,21 +72,20 @@ class FeedRepositoryTest {
             .updatedAt(updatedAt)
             .build();
 
-        for (String path : feedRequestDto.getImages()) {
-            images.add(Image.builder()
-                .imagePath(path)
+        List<Image> images = Lists.newArrayList(
+            Image.builder()
+                .imagePath("static/test.png")
+                .imageUrl("http://test.png")
+                .feed(newFeed)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
-                .feed(newFeed)
                 .build());
-        }
-
         newFeed.setImages(images);
 
-        Feed save = feedRepository.save(newFeed);
-        imageRepository.saveAll(images);
+        Feed savedFeed = feedRepository.save(newFeed);
+        List<Image> savedImages = imageRepository.saveAll(images);
 
-        System.out.println(save);
-        System.out.println(save.getUser());
+        Assertions.assertThat(savedFeed.getImages().stream().count())
+            .isEqualTo(savedImages.stream().count());
     }
 }

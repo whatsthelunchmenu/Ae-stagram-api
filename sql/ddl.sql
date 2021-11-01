@@ -1,32 +1,33 @@
-create table User(
-     ID int(10) not null auto_increment,
-     UUID varchar(100) not null,
-     EMAIL varchar(100) not null,
-     DISPLAY_NAME varchar(100) not null,
-     PROFILE_IMAGE varchar(255),
-     CREATED_AT datetime not null,
-     UPDATED_AT datetime not null,
-     primary key (ID),
-     unique key uk_uuid (UUID)
-);
+create table user
+(
+    id            bigint not null auto_increment,
+    created_at    datetime(6),
+    display_name  varchar(255),
+    email         varchar(255),
+    profile_image varchar(255),
+    updated_at    datetime(6),
+    uuid          varchar(255),
+    primary key (id)
+) engine=InnoDB
 
-create table Feed(
-    ID int(10) not null auto_increment,
-    CONTENT varchar(255),
-    USER_ID int(10) not null,
-    CREATED_AT datetime not null,
-    UPDATED_AT datetime not null,
-    primary key (ID),
-    foreign key (USER_ID) references User (ID)
-);
+create table feed
+(
+    id         bigint not null auto_increment,
+    content    TEXT   not null,
+    created_at datetime(6),
+    updated_at datetime(6),
+    user_id    bigint,
+    primary key (id)
+) engine=InnoDB
 
 
-create table Image(
-	  ID int(10) not null auto_increment,
-    FEED_ID int(10) not null,
-    IMAGE_PATH varchar(255),
-    CREATED_AT datetime not null,
-    UPDATED_AT datetime not null,
-    primary key (ID),
-    foreign key (FEED_ID) references Feed (ID)
-);
+create table image
+(
+    id         bigint not null auto_increment,
+    created_at datetime(6),
+    image_path varchar(255),
+    image_url  varchar(255),
+    updated_at datetime(6),
+    feed_id    bigint,
+    primary key (id)
+) engine=InnoDB

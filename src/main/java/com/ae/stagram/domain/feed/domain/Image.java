@@ -25,6 +25,8 @@ public class Image {
 
     private String imagePath;
 
+    private String imageUrl;
+
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
