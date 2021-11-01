@@ -43,16 +43,19 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: ./build/reports/jacoco/test/jacocoTestReport.xml
 
-      - name: 프로젝트 Zip 파일로 압축
-        run: zip -r ./$GITHUB_SHA.zip .
-        shell: bash
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+      # 슬랙으로 결과를 발송합니다.
+      - name: Slack Notifications
+        uses: 8398a7/action-slack@v3
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-northeast-2
-
-      - name: Upload to S3
-        run: aws s3 cp --region $S3_BUCKET_REGION ./$GITHUB_SHA.zip s3://$S3_BUCKET_NAME/$PROJECT_NAME/$GITHUB_SHA.zip
+          status: custom
+          fields: workflow,job,commit,repo,ref,author,took
+          custom_payload: |
+            {
+              attachments: [{
+                color: '${{ job.status }}' === 'success' ? 'good' : '${{ job.status }}' === 'failure' ? 'danger' : 'warning',
+                text: `테스트가 실패했습니다.\n프로젝트: ${process.env.AS_REPO}\n작성자: ${process.env.AS_AUTHOR}\n결과: ${process.env.AS_JOB}\n`,
+              }]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        if: failure()
