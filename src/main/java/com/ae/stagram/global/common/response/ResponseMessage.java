@@ -38,12 +38,12 @@ public class ResponseMessage {
             .build();
     }
 
-    public static ResponseMessage fail(String errorMessage, HttpStatus httpStatus) {
+    public static ResponseMessage fail(String errorMessage, int httpStatus) {
         return ResponseMessage.builder()
             .header(ResponseMessageHeader.builder()
                 .result(false)
                 .message(errorMessage)
-                .status(httpStatus.value())
+                .status(httpStatus)
                 .build())
             .body(null)
             .build();

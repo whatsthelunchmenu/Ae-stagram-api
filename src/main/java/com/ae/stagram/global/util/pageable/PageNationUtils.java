@@ -1,7 +1,7 @@
 package com.ae.stagram.global.util.pageable;
 
-import com.ae.stagram.domain.feed.dao.FeedRepository;
-import com.ae.stagram.domain.feed.domain.Feed;
+import com.ae.stagram.domain.feed.FeedRepository;
+import com.ae.stagram.domain.feed.Feed;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
